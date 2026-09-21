@@ -5,8 +5,8 @@ export const PAYWALL = {
   proBullets:
     '맞춤 루틴·주간 플랜 · 다크티·레이어링 핏 가이드 · 진행 로그·복습 퀴즈 · (광고제거 가능시)',
   freeCta: 'Free 시작하기',
-  proCta: 'Pro로 루틴 업그레이드',
-  trialCta: '7일 체험',
+  proCta: 'Pro 시작 · 월 ₩4,900',
+  trialCta: '7일 체험 후 월 ₩4,900',
   priceLabel: 'Pro · 월 ₩4,900',
   annualPlaceholder: '연간 플랜 · 곧 공개',
   footnote:

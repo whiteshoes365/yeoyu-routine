@@ -110,7 +110,7 @@ describe('paywall copy', () => {
     expect(PAYWALL.headline).toContain('옷맵시')
     expect(PAYWALL.priceLabel).toBe('Pro · 월 ₩4,900')
     expect(PAYWALL.freeCta).toBe('Free 시작하기')
-    expect(PAYWALL.proCta).toBe('Pro로 루틴 업그레이드')
+    expect(PAYWALL.proCta).toBe('Pro 시작 · 월 ₩4,900')
     expect(PAYWALL.proBullets).not.toMatch(/1:1|그룹 코칭/)
     expect(PAYWALL.footnote).toContain('의료 상담')
   })

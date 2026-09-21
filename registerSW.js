@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/yeoyu-routine/sw.js', { scope: '/yeoyu-routine/' })})}

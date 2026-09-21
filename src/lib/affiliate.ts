@@ -21,7 +21,7 @@ export const AFFILIATE_SLOTS = [
 ] as const
 
 export const AFFILIATE_DISCLOSURE =
-  '이 링크는 제휴 링크일 수 있으며, 구매 시 여유루틴에 수수료가 발생할 수 있습니다. 제품은 패션·운동용이며 치료·의료 목적이 아닙니다.'
+  '임시 은폐: 제휴 링크는 마케팅 확정 전 비활성( # )입니다. 이 링크는 제휴 링크일 수 있으며, 구매 시 여유루틴에 수수료가 발생할 수 있습니다. 제품은 패션·운동용이며 치료·의료 목적이 아닙니다.'
 
 /** Short badge on each slot */
-export const AFFILIATE_BADGE = '제휴 고지 · 치료 아님'
+export const AFFILIATE_BADGE = '임시 은폐 · 제휴 고지 · 치료 아님'

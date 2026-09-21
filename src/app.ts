@@ -170,8 +170,8 @@ export function mountApp(root: HTMLElement): void {
     ).join('')
     return `
       <article class="card stack">
-        <h3>제휴 샵 (정보성)</h3>
-        <p class="muted tiny">패션·운동 용품 슬롯입니다. 치료·의료 제품이 아닙니다. 링크는 확정 전입니다.</p>
+        <h3>제휴 샵 (정보성 · 임시 은폐)</h3>
+        <p class="muted tiny">임시 은폐: 패션·운동 용품 슬롯이며 치료·의료 제품이 아닙니다. 링크는 마케팅 확정 전 # 입니다.</p>
         <div class="affiliate-grid">${slots}</div>
         <p class="muted tiny disclose">${escapeHtml(AFFILIATE_DISCLOSURE)}</p>
       </article>`

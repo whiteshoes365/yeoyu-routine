@@ -10,7 +10,7 @@ export const PAYWALL = {
   priceLabel: 'Pro · 월 ₩4,900',
   annualPlaceholder: '연간 플랜 · 곧 공개',
   footnote:
-    '여유루틴은 운동·옷맵시·생활 습관 코칭입니다. 의료 상담·시술·치료 효과를 약속하지 않습니다.',
+    '여유루틴은 운동·옷맵시·생활 습관 가이드입니다. 의료 상담·시술·치료 효과를 약속하지 않습니다.',
   billingPending:
     '가격 확정 후 결제 연동 예정입니다. 지금은 체험·Pro UI만 로컬로 확인할 수 있습니다.',
   lockedFeatures: [

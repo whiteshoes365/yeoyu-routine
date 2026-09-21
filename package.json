@@ -1,7 +1,7 @@
 {
   "name": "yeoyu-routine",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "여유루틴 — 비수술 생활 관리 루틴·저널 (로컬 전용 PWA)",
   "scripts": {

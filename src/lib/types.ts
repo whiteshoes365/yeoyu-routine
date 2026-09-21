@@ -1,4 +1,4 @@
-export type TabId = 'onboarding' | 'routine' | 'journal'
+export type TabId = 'onboarding' | 'routine' | 'journal' | 'settings'
 
 export type DailyEntry = {
   date: string // YYYY-MM-DD local

@@ -7,12 +7,19 @@ import {
   ONBOARDING,
   tipIndexForDate,
 } from './lib/content'
+import { AFFILIATE_BADGE, AFFILIATE_DISCLOSURE, AFFILIATE_SLOTS } from './lib/affiliate'
 import { isDailyComplete, todayKey, WEEK_LABELS, weekKeys } from './lib/day'
+import { PAYWALL } from './lib/paywall'
 import {
-  getOrCreateDaily,
-  loadData,
-  saveData,
-} from './lib/storage'
+  FREE_JOURNAL_LIMIT,
+  hasProAccess,
+  loadSubscription,
+  saveSubscription,
+  statusLabel,
+  type SubRecord,
+  type SubscriptionStatus,
+} from './lib/subscription'
+import { getOrCreateDaily, loadData, saveData } from './lib/storage'
 import type { JournalEntry, TabId } from './lib/types'
 
 function escapeHtml(s: string): string {
@@ -29,17 +36,61 @@ function uid(): string {
 
 export function mountApp(root: HTMLElement): void {
   let data = loadData()
+  let sub: SubRecord = loadSubscription()
   let tab: TabId = data.onboardingDone ? 'routine' : 'onboarding'
   let journalDraft = ''
   let journalMood = 3
   let journalStress = 3
+  let showPaywall = false
+  let toastMsg: string | null = null
+  let toastTimer: ReturnType<typeof setTimeout> | null = null
 
   function persist(): void {
     saveData(data)
   }
 
+  function persistSub(): void {
+    saveSubscription(sub)
+  }
+
+  function isPro(): boolean {
+    return hasProAccess(sub.status)
+  }
+
   function setTab(next: TabId): void {
     tab = next
+    showPaywall = false
+    render()
+  }
+
+  function showToast(msg: string): void {
+    toastMsg = msg
+    if (toastTimer) clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => {
+      toastMsg = null
+      toastTimer = null
+      render()
+    }, 3200)
+    render()
+  }
+
+  function openPaywall(): void {
+    showPaywall = true
+    render()
+  }
+
+  function closePaywall(): void {
+    showPaywall = false
+    render()
+  }
+
+  function setStatus(status: SubscriptionStatus): void {
+    sub = {
+      status,
+      trialStartedAt:
+        status === 'trial' ? sub.trialStartedAt || new Date().toISOString() : sub.trialStartedAt,
+    }
+    persistSub()
     render()
   }
 
@@ -51,11 +102,87 @@ export function mountApp(root: HTMLElement): void {
     return `<aside class="anti-hype" role="note"><strong>제품 추천·판매 없음</strong><p>${escapeHtml(ANTI_HYPE_NOTICE)}</p></aside>`
   }
 
+  function renderToast(): string {
+    if (!toastMsg) return ''
+    return `<div class="toast" role="status">${escapeHtml(toastMsg)}</div>`
+  }
+
+  function renderPaywallModal(): string {
+    if (!showPaywall) return ''
+    return `
+      <div class="modal-backdrop" data-action="paywall-close" role="presentation">
+        <div class="modal card stack" role="dialog" aria-labelledby="paywall-title" data-stop>
+          <h2 id="paywall-title" class="tight">${escapeHtml(PAYWALL.headline)}</h2>
+          <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
+          <p class="muted tiny">${escapeHtml(PAYWALL.annualPlaceholder)}</p>
+          <div class="tier-box">
+            <strong>Free</strong>
+            <p class="tiny">${escapeHtml(PAYWALL.freeBullets)}</p>
+          </div>
+          <div class="tier-box tier-box--pro">
+            <strong>Pro</strong>
+            <p class="tiny">${escapeHtml(PAYWALL.proBullets)}</p>
+          </div>
+          <div class="row wrap">
+            <button type="button" class="btn ghost" data-action="paywall-free">${escapeHtml(PAYWALL.freeCta)}</button>
+            <button type="button" class="btn primary" data-action="paywall-pro">${escapeHtml(PAYWALL.proCta)}</button>
+          </div>
+          <button type="button" class="btn link" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>
+          <p class="muted tiny footnote">${escapeHtml(PAYWALL.footnote)}</p>
+          <button type="button" class="btn ghost" data-action="paywall-close">닫기</button>
+        </div>
+      </div>`
+  }
+
+  function renderLockedCard(title: string, desc: string): string {
+    return `
+      <article class="card locked-card stack">
+        <div class="row between">
+          <strong>${escapeHtml(title)}</strong>
+          <span class="badge pro-badge">Pro</span>
+        </div>
+        <p class="muted tiny">${escapeHtml(desc)}</p>
+        <button type="button" class="btn primary" data-action="open-paywall">잠금 해제 · ${escapeHtml(PAYWALL.priceLabel)}</button>
+      </article>`
+  }
+
+  function renderProUnlocked(title: string, body: string): string {
+    return `
+      <article class="card stack pro-unlocked">
+        <div class="row between">
+          <strong>${escapeHtml(title)}</strong>
+          <span class="badge ok">${escapeHtml(statusLabel(sub.status))}</span>
+        </div>
+        <p class="tiny">${escapeHtml(body)}</p>
+      </article>`
+  }
+
+  function renderAffiliateShop(): string {
+    const slots = AFFILIATE_SLOTS.map(
+      (s) => `
+        <a class="affiliate-slot" href="${escapeHtml(s.href)}" data-affiliate="${escapeHtml(s.id)}">
+          <div class="row between">
+            <strong>${escapeHtml(s.title)}</strong>
+            <span class="badge affiliate-badge">${escapeHtml(AFFILIATE_BADGE)}</span>
+          </div>
+          <p class="muted tiny">${escapeHtml(s.blurb)}</p>
+        </a>`,
+    ).join('')
+    return `
+      <article class="card stack">
+        <h3>제휴 샵 (정보성)</h3>
+        <p class="muted tiny">패션·운동 용품 슬롯입니다. 치료·의료 제품이 아닙니다. 링크는 확정 전입니다.</p>
+        <div class="affiliate-grid">${slots}</div>
+        <p class="muted tiny disclose">${escapeHtml(AFFILIATE_DISCLOSURE)}</p>
+      </article>`
+  }
+
   function renderTabs(): string {
     const items: { id: TabId; label: string }[] = [
       { id: 'onboarding', label: '온보딩교육' },
       { id: 'routine', label: '오늘루틴' },
       { id: 'journal', label: '익명저널' },
+      { id: 'settings', label: '설정' },
     ]
     return `<nav class="tabs" aria-label="주요 화면">${items
       .map(
@@ -105,6 +232,7 @@ export function mountApp(root: HTMLElement): void {
     const keys = weekKeys()
     const food = FOOD_TIPS[tipIndexForDate(date, FOOD_TIPS.length)]
     const cloth = CLOTHING_TIPS[tipIndexForDate(date + 'c', CLOTHING_TIPS.length)]
+    const pro = isPro()
 
     const weekDots = keys
       .map((k, i) => {
@@ -125,6 +253,31 @@ export function mountApp(root: HTMLElement): void {
       </label>`
     }).join('')
 
+    const planBlock = pro
+      ? renderProUnlocked(
+          '맞춤 4–12주 플랜',
+          '맞춤 루틴·주간 플랜 UI (로컬 미리보기). 실제 맞춤 생성은 추후 연동됩니다.',
+        )
+      : renderLockedCard('맞춤 4–12주 플랜', '맞춤 루틴·주간 플랜 (Pro)')
+
+    const historyBlock = pro
+      ? renderProUnlocked(
+          '장기 진행 로그',
+          '진행 로그·복습 퀴즈 · 장기 기록 UI (로컬 미리보기).',
+        )
+      : renderLockedCard('장기 진행 로그', '진행 로그·복습 퀴즈 · 장기 기록 (Pro)')
+
+    const fitBlock = pro
+      ? renderProUnlocked(
+          '프리미엄 핏 가이드 팩',
+          '다크티·레이어링 핏 가이드 팩 UI (로컬 미리보기). 치료·의료 목적이 아닙니다.',
+        )
+      : renderLockedCard('프리미엄 핏 가이드 팩', '다크티·레이어링 핏 가이드 (Pro)')
+
+    const adBlock = pro
+      ? renderProUnlocked('광고 제거', '광고가 도입되면 Pro에서 제거됩니다. (플레이스홀더)')
+      : renderLockedCard('광고 제거', '광고가 도입되면 Pro에서 제거 (선택·플레이스홀더)')
+
     return `
       <section class="panel stack">
         <header class="card head-card">
@@ -133,7 +286,7 @@ export function mountApp(root: HTMLElement): void {
               <h2 class="tight">오늘루틴</h2>
               <p class="sub muted">${escapeHtml(date)}</p>
             </div>
-            <span class="badge paid-placeholder" title="준비 중">콘텐츠팩 · 곧</span>
+            <button type="button" class="badge paid-placeholder badge-btn" data-action="open-paywall">${escapeHtml(statusLabel(sub.status))} · ${escapeHtml(PAYWALL.priceLabel)}</button>
           </div>
           <div class="week-row">${weekDots}</div>
         </header>
@@ -188,30 +341,48 @@ export function mountApp(root: HTMLElement): void {
           ${hospital}
         </article>
 
-        <div class="card paid-card">
-          <div class="row between">
-            <strong>유료 콘텐츠팩 / 구독</strong>
-            <span class="badge">준비 중</span>
+        ${planBlock}
+        ${historyBlock}
+        ${fitBlock}
+        ${adBlock}
+
+        ${renderAffiliateShop()}
+
+        <div class="card paywall-cta stack">
+          <h3>${escapeHtml(PAYWALL.headline)}</h3>
+          <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
+          <p class="tiny"><strong>Free</strong> — ${escapeHtml(PAYWALL.freeBullets)}</p>
+          <p class="tiny"><strong>Pro</strong> — ${escapeHtml(PAYWALL.proBullets)}</p>
+          <div class="row wrap">
+            <button type="button" class="btn ghost" data-action="paywall-free">${escapeHtml(PAYWALL.freeCta)}</button>
+            <button type="button" class="btn primary" data-action="open-paywall">${escapeHtml(PAYWALL.proCta)}</button>
           </div>
-          <p class="muted tiny">교육 심화·루틴 확장 팩을 준비 중입니다. 결제는 아직 없습니다.</p>
-          <button type="button" class="btn primary" disabled>곧 공개</button>
+          <button type="button" class="btn link" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>
+          <p class="muted tiny">${escapeHtml(PAYWALL.footnote)}</p>
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.1')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.2')} · 로컬 전용</p>
       </section>`
   }
 
   function renderJournal(): string {
     const date = todayKey()
     const routineDone = isDailyComplete(data.dailies[date])
-    const list = [...data.journals].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    const listAll = [...data.journals].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    const pro = isPro()
+    const list = pro ? listAll : listAll.slice(0, FREE_JOURNAL_LIMIT)
+    const hidden = listAll.length - list.length
 
     return `
       <section class="panel stack">
         <article class="card notice">
           <strong>익명 · 로컬 전용</strong>
-          <p class="muted tiny">계정 없음 · 서버 업로드 없음. 기록은 이 기기에만 저장됩니다.</p>
+          <p class="muted tiny">계정 없음 · 서버 업로드 없음. 기록은 이 기기에만 저장됩니다.${
+            pro
+              ? ''
+              : ` Free는 최근 ${FREE_JOURNAL_LIMIT}건까지 표시합니다.`
+          }</p>
         </article>
 
         <article class="card stack">
@@ -257,10 +428,64 @@ export function mountApp(root: HTMLElement): void {
                   )
                   .join('')}</ul>`
           }
+          ${
+            hidden > 0
+              ? `<p class="muted tiny">장기 기록 ${hidden}건은 Pro에서 확인할 수 있습니다.</p>
+                 <button type="button" class="btn primary" data-action="open-paywall">장기 기록 잠금 해제 · ${escapeHtml(PAYWALL.priceLabel)}</button>`
+              : ''
+          }
         </article>
 
         <p class="footer-note">${escapeHtml(DISCLAIMER)}</p>
       </section>`
+  }
+
+  function renderSettings(): string {
+    const options: SubscriptionStatus[] = ['free', 'trial', 'pro']
+    return `
+      <section class="panel stack">
+        <article class="card stack">
+          <h2 class="tight">구독 상태 (로컬 목)</h2>
+          <p class="muted tiny">결제 SDK 없음. 테스트용으로 상태를 바꿀 수 있습니다. 실제 결제는 연동 예정입니다.</p>
+          <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
+          <p class="muted tiny">${escapeHtml(PAYWALL.annualPlaceholder)}</p>
+          <div class="sub-switch" role="group" aria-label="구독 상태">
+            ${options
+              .map(
+                (s) =>
+                  `<button type="button" class="scale-btn${sub.status === s ? ' on' : ''}" data-sub="${s}">${escapeHtml(statusLabel(s))}</button>`,
+              )
+              .join('')}
+          </div>
+          <p class="tiny">현재: <strong>${escapeHtml(statusLabel(sub.status))}</strong>${
+            sub.trialStartedAt
+              ? ` · 체험 시작 ${escapeHtml(sub.trialStartedAt.slice(0, 10))}`
+              : ''
+          }</p>
+          <div class="row wrap">
+            <button type="button" class="btn ghost" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>
+            <button type="button" class="btn primary" data-action="open-paywall">${escapeHtml(PAYWALL.proCta)}</button>
+          </div>
+        </article>
+
+        <article class="card stack">
+          <h3>Free / Pro 요약</h3>
+          <p class="tiny"><strong>Free</strong> — ${escapeHtml(PAYWALL.freeBullets)}</p>
+          <p class="tiny"><strong>Pro</strong> — ${escapeHtml(PAYWALL.proBullets)}</p>
+          <p class="muted tiny">${escapeHtml(PAYWALL.footnote)}</p>
+        </article>
+
+        ${renderAffiliateShop()}
+        ${renderDisclaimer(false)}
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.2')}</p>
+      </section>`
+  }
+
+  function panelBody(): string {
+    if (tab === 'onboarding') return renderOnboarding()
+    if (tab === 'routine') return renderRoutine()
+    if (tab === 'journal') return renderJournal()
+    return renderSettings()
   }
 
   function render(): void {
@@ -270,19 +495,68 @@ export function mountApp(root: HTMLElement): void {
         <p class="sub">생활 관리 루틴 · 진단·치료 아님</p>
       </header>
       ${renderTabs()}
-      ${tab === 'onboarding' ? renderOnboarding() : tab === 'routine' ? renderRoutine() : renderJournal()}
+      ${panelBody()}
+      ${renderPaywallModal()}
+      ${renderToast()}
     `
   }
 
   root.addEventListener('click', (ev) => {
     const t = ev.target as HTMLElement
+
+    const affiliate = t.closest('[data-affiliate]') as HTMLElement | null
+    if (affiliate) {
+      ev.preventDefault()
+      showToast('제휴 링크는 마케팅 확정 후 연결됩니다. (지금은 #)')
+      return
+    }
+
+    if (t.closest('[data-stop]') && !t.closest('[data-action]')) {
+      ev.stopPropagation()
+      return
+    }
+
     const tabBtn = t.closest('[data-tab]') as HTMLElement | null
     if (tabBtn?.dataset.tab) {
       setTab(tabBtn.dataset.tab as TabId)
       return
     }
 
+    const subBtn = (t.closest('[data-sub]') as HTMLElement | null)?.dataset.sub as
+      | SubscriptionStatus
+      | undefined
+    if (subBtn === 'free' || subBtn === 'trial' || subBtn === 'pro') {
+      setStatus(subBtn)
+      showToast(`구독 상태 → ${statusLabel(subBtn)} (로컬 목)`)
+      return
+    }
+
     const action = (t.closest('[data-action]') as HTMLElement | null)?.dataset.action
+    if (action === 'open-paywall') {
+      openPaywall()
+      return
+    }
+    if (action === 'paywall-close') {
+      closePaywall()
+      return
+    }
+    if (action === 'paywall-free') {
+      setStatus('free')
+      showPaywall = false
+      showToast('Free로 시작합니다. (로컬)')
+      return
+    }
+    if (action === 'paywall-pro') {
+      showToast(PAYWALL.billingPending)
+      return
+    }
+    if (action === 'paywall-trial') {
+      setStatus('trial')
+      showPaywall = false
+      showToast(`${PAYWALL.trialCta} 시작 (로컬 목). ${PAYWALL.billingPending}`)
+      return
+    }
+
     if (action === 'ob-next') {
       data = { ...data, onboardingStage: Math.min(2, data.onboardingStage + 1) }
       persist()
@@ -296,7 +570,11 @@ export function mountApp(root: HTMLElement): void {
       return
     }
     if (action === 'ob-done' || action === 'ob-skip') {
-      data = { ...data, onboardingDone: true, onboardingStage: action === 'ob-done' ? 2 : data.onboardingStage }
+      data = {
+        ...data,
+        onboardingDone: true,
+        onboardingStage: action === 'ob-done' ? 2 : data.onboardingStage,
+      }
       persist()
       setTab('routine')
       return

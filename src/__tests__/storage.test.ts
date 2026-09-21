@@ -66,3 +66,62 @@ describe('content', () => {
     expect(tipIndexForDate('2026-09-22', 3)).toBeLessThan(3)
   })
 })
+
+import {
+  createSubMemoryBackend,
+  emptySub,
+  hasProAccess,
+  loadSubscription,
+  saveSubscription,
+  setSubStorageBackend,
+  statusLabel,
+  FREE_JOURNAL_LIMIT,
+} from '../lib/subscription'
+import { PAYWALL } from '../lib/paywall'
+import { AFFILIATE_SLOTS, AFFILIATE_DISCLOSURE } from '../lib/affiliate'
+
+describe('subscription', () => {
+  beforeEach(() => {
+    setSubStorageBackend(createSubMemoryBackend())
+  })
+
+  test('default free', () => {
+    expect(loadSubscription().status).toBe('free')
+    expect(hasProAccess('free')).toBe(false)
+    expect(hasProAccess('trial')).toBe(true)
+    expect(hasProAccess('pro')).toBe(true)
+  })
+
+  test('roundtrip trial/pro', () => {
+    saveSubscription({ status: 'trial', trialStartedAt: '2026-09-22T00:00:00.000Z' })
+    const loaded = loadSubscription()
+    expect(loaded.status).toBe('trial')
+    expect(loaded.trialStartedAt).toBe('2026-09-22T00:00:00.000Z')
+    saveSubscription({ status: 'pro' })
+    expect(loadSubscription().status).toBe('pro')
+    expect(statusLabel('pro')).toBe('Pro')
+    expect(emptySub().status).toBe('free')
+    expect(FREE_JOURNAL_LIMIT).toBe(7)
+  })
+})
+
+describe('paywall copy', () => {
+  test('confirmed marketing + price', () => {
+    expect(PAYWALL.headline).toContain('옷맵시')
+    expect(PAYWALL.priceLabel).toBe('Pro · 월 ₩4,900')
+    expect(PAYWALL.freeCta).toBe('Free 시작하기')
+    expect(PAYWALL.proCta).toBe('Pro로 루틴 업그레이드')
+    expect(PAYWALL.proBullets).not.toMatch(/1:1|그룹 코칭/)
+    expect(PAYWALL.footnote).toContain('의료 상담')
+  })
+})
+
+describe('affiliate slots', () => {
+  test('three informational slots', () => {
+    expect(AFFILIATE_SLOTS).toHaveLength(3)
+    expect(AFFILIATE_SLOTS[0].title).toContain('다크')
+    expect(AFFILIATE_SLOTS.every((s) => s.href === '#')).toBe(true)
+    expect(AFFILIATE_DISCLOSURE).toContain('제휴 링크')
+    expect(AFFILIATE_DISCLOSURE).toContain('치료·의료 목적')
+  })
+})

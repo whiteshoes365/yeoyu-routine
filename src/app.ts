@@ -1,4 +1,5 @@
 import {
+  ANTI_HYPE_NOTICE,
   CLOTHING_TIPS,
   DISCLAIMER,
   FOOD_TIPS,
@@ -46,6 +47,10 @@ export function mountApp(root: HTMLElement): void {
     return `<aside class="disclaimer${prominent ? ' disclaimer--focus' : ''}" role="note">${escapeHtml(DISCLAIMER)}</aside>`
   }
 
+  function renderAntiHypeNotice(): string {
+    return `<aside class="anti-hype" role="note"><strong>제품 추천·판매 없음</strong><p>${escapeHtml(ANTI_HYPE_NOTICE)}</p></aside>`
+  }
+
   function renderTabs(): string {
     const items: { id: TabId; label: string }[] = [
       { id: 'onboarding', label: '온보딩교육' },
@@ -66,6 +71,7 @@ export function mountApp(root: HTMLElement): void {
     return `
       <section class="panel stack">
         ${renderDisclaimer(true)}
+        ${renderAntiHypeNotice()}
         <div class="stage-dots" aria-label="교육 단계">
           ${ONBOARDING.map((_, i) => `<span class="dot${i === stage ? ' on' : i < stage ? ' done' : ''}"></span>`).join('')}
         </div>
@@ -131,6 +137,7 @@ export function mountApp(root: HTMLElement): void {
           </div>
           <div class="week-row">${weekDots}</div>
         </header>
+        ${renderAntiHypeNotice()}
 
         <article class="card stack">
           <h3>일일 체크</h3>
@@ -177,7 +184,7 @@ export function mountApp(root: HTMLElement): void {
 
         <article class="card stack">
           <h3>병원 상담 체크리스트</h3>
-          <p class="muted tiny">상담 전 스스로 정리하는 질문입니다. 병원 순위·예약·추천은 제공하지 않습니다.</p>
+          <p class="muted tiny">진단이나 치료 지시가 아닌, 상담 전 스스로 정리하는 체크리스트입니다. 병원 순위·예약·추천은 제공하지 않습니다.</p>
           ${hospital}
         </article>
 
@@ -191,7 +198,7 @@ export function mountApp(root: HTMLElement): void {
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.0')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.1')} · 로컬 전용</p>
       </section>`
   }
 

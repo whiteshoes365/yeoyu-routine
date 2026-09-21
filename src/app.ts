@@ -31,7 +31,7 @@ export function mountApp(root: HTMLElement): void {
   let tab: TabId = data.onboardingDone ? 'routine' : 'onboarding'
   let journalDraft = ''
   let journalMood = 3
-  let journalConf = 3
+  let journalStress = 3
 
   function persist(): void {
     saveData(data)
@@ -212,7 +212,7 @@ export function mountApp(root: HTMLElement): void {
           ${routineDone ? `<span class="badge ok">오늘 루틴 완료</span>` : ''}
           <textarea class="textarea" data-j="text" maxlength="280" placeholder="오늘의 몸·마음 한 줄…">${escapeHtml(journalDraft)}</textarea>
           <div class="field">
-            <span>기분 (1–5)</span>
+            <span>기분 (1=가라앉음 ~ 5=괜찮음)</span>
             <div class="scale">${[1, 2, 3, 4, 5]
               .map(
                 (n) =>
@@ -221,11 +221,11 @@ export function mountApp(root: HTMLElement): void {
               .join('')}</div>
           </div>
           <div class="field">
-            <span>자신감 (1–5)</span>
+            <span>스트레스 (1=낮음 ~ 5=높음)</span>
             <div class="scale">${[1, 2, 3, 4, 5]
               .map(
                 (n) =>
-                  `<button type="button" class="scale-btn${journalConf === n ? ' on' : ''}" data-jconf="${n}">${n}</button>`,
+                  `<button type="button" class="scale-btn${journalStress === n ? ' on' : ''}" data-jstress="${n}">${n}</button>`,
               )
               .join('')}</div>
           </div>
@@ -242,7 +242,7 @@ export function mountApp(root: HTMLElement): void {
                     (j) => `<li class="journal-item">
                       <div class="row between">
                         <span class="muted tiny">${escapeHtml(j.date)}</span>
-                        <span class="tiny">기분 ${j.mood} · 자신감 ${j.confidence}${j.routineDone ? ' · 루틴✓' : ''}</span>
+                        <span class="tiny">기분 ${j.mood} · 스트레스 ${j.stress}${j.routineDone ? ' · 루틴✓' : ''}</span>
                       </div>
                       <p>${escapeHtml(j.text)}</p>
                       <button type="button" class="btn link danger-text" data-jdel="${escapeHtml(j.id)}">삭제</button>
@@ -304,7 +304,7 @@ export function mountApp(root: HTMLElement): void {
         createdAt: new Date().toISOString(),
         text: text.slice(0, 280),
         mood: journalMood,
-        confidence: journalConf,
+        stress: journalStress,
         routineDone: isDailyComplete(data.dailies[date]),
       }
       data = { ...data, journals: [entry, ...data.journals].slice(0, 200) }
@@ -336,9 +336,9 @@ export function mountApp(root: HTMLElement): void {
       render()
       return
     }
-    const jconf = (t.closest('[data-jconf]') as HTMLElement | null)?.dataset.jconf
-    if (jconf) {
-      journalConf = Number(jconf)
+    const jstress = (t.closest('[data-jstress]') as HTMLElement | null)?.dataset.jstress
+    if (jstress) {
+      journalStress = Number(jstress)
       render()
       return
     }

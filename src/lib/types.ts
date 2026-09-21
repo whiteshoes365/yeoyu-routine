@@ -14,7 +14,7 @@ export type JournalEntry = {
   createdAt: string
   text: string
   mood: number // 1-5
-  confidence: number // 1-5
+  stress: number // 1-5 (legacy key: confidence)
   routineDone?: boolean
 }
 

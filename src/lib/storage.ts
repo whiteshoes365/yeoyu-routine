@@ -67,7 +67,12 @@ export function loadData(): AppData {
       dailies: (parsed.dailies && typeof parsed.dailies === 'object'
         ? parsed.dailies
         : {}) as Record<string, DailyEntry>,
-      journals: Array.isArray(parsed.journals) ? (parsed.journals as JournalEntry[]) : [],
+      journals: Array.isArray(parsed.journals)
+        ? (parsed.journals as Array<JournalEntry & { confidence?: number }>).map((j) => ({
+            ...j,
+            stress: j.stress ?? j.confidence ?? 3,
+          }))
+        : [],
       hospitalChecks:
         parsed.hospitalChecks && typeof parsed.hospitalChecks === 'object'
           ? (parsed.hospitalChecks as Record<string, boolean>)

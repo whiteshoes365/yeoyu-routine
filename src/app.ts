@@ -7,7 +7,7 @@ import {
   ONBOARDING,
   tipIndexForDate,
 } from './lib/content'
-import { AFFILIATE_BADGE, AFFILIATE_DISCLOSURE, AFFILIATE_SLOTS } from './lib/affiliate'
+import { AFFILIATE_BADGE, AFFILIATE_BANNER, AFFILIATE_DISCLOSURE, AFFILIATE_SLOTS } from './lib/affiliate'
 import { isDailyComplete, todayKey, WEEK_LABELS, weekKeys } from './lib/day'
 import { PAYWALL } from './lib/paywall'
 import {
@@ -170,8 +170,9 @@ export function mountApp(root: HTMLElement): void {
     ).join('')
     return `
       <article class="card stack">
-        <h3>제휴 샵 (정보성 · 임시 은폐)</h3>
-        <p class="muted tiny">임시 은폐: 패션·운동 용품 슬롯이며 치료·의료 제품이 아닙니다. 링크는 마케팅 확정 전 # 입니다.</p>
+        <h3>제휴 샵 (정보성)</h3>
+        <aside class="anti-hype" role="note"><strong>임시 은폐</strong><p>${escapeHtml(AFFILIATE_BANNER)}</p></aside>
+        <p class="muted tiny">패션·운동 용품 슬롯입니다. 치료·의료 제품이 아닙니다. 링크는 # 입니다.</p>
         <div class="affiliate-grid">${slots}</div>
         <p class="muted tiny disclose">${escapeHtml(AFFILIATE_DISCLOSURE)}</p>
       </article>`
@@ -362,7 +363,7 @@ export function mountApp(root: HTMLElement): void {
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.2')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.5')} · 로컬 전용</p>
       </section>`
   }
 
@@ -477,7 +478,12 @@ export function mountApp(root: HTMLElement): void {
 
         ${renderAffiliateShop()}
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.2')}</p>
+        <article class="card stack">
+          <h3>앱 캐시</h3>
+          <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
+          <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
+        </article>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.5')} · 습관 가이드</p>
       </section>`
   }
 

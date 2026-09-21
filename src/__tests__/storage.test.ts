@@ -78,7 +78,7 @@ import {
   FREE_JOURNAL_LIMIT,
 } from '../lib/subscription'
 import { PAYWALL } from '../lib/paywall'
-import { AFFILIATE_SLOTS, AFFILIATE_DISCLOSURE } from '../lib/affiliate'
+import { AFFILIATE_SLOTS, AFFILIATE_DISCLOSURE, AFFILIATE_BADGE, AFFILIATE_BANNER } from '../lib/affiliate'
 
 describe('subscription', () => {
   beforeEach(() => {
@@ -123,6 +123,8 @@ describe('affiliate slots', () => {
     expect(AFFILIATE_SLOTS[0].title).toContain('다크')
     expect(AFFILIATE_SLOTS.every((s) => s.href === '#')).toBe(true)
     expect(AFFILIATE_DISCLOSURE).toContain('임시 은폐')
+    expect(AFFILIATE_BADGE).toContain('임시 은폐')
+    expect(AFFILIATE_BANNER).toContain('임시 은폐')
     expect(AFFILIATE_DISCLOSURE).toContain('제휴 링크')
     expect(AFFILIATE_DISCLOSURE).toContain('치료·의료 목적')
   })

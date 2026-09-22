@@ -475,13 +475,6 @@ export function mountApp(root: HTMLElement): void {
     const fitBlock = pro
       ? renderProFitGuide()
       : renderLockedCard('프리미엄 핏 가이드 팩', '다크티·레이어링·이너·트레이닝웨어 핏 가이드 (Pro)')
-    const adBlock = pro
-      ? `<article class="card stack pro-unlocked">
-          <div class="row between"><strong>광고 제거</strong><span class="badge ok">${escapeHtml(statusLabel(sub.status))}</span></div>
-          <p class="tiny">광고가 도입되면 Pro에서 제거됩니다. (플레이스홀더)</p>
-        </article>`
-      : renderLockedCard('광고 제거', '광고가 도입되면 Pro에서 제거 (선택·플레이스홀더)')
-
     return `
       <section class="panel stack">
         <header class="card head-card">
@@ -490,7 +483,7 @@ export function mountApp(root: HTMLElement): void {
               <h2 class="tight">오늘루틴</h2>
               <p class="sub muted">${escapeHtml(date)}</p>
             </div>
-            <button type="button" class="badge paid-placeholder badge-btn" data-action="open-paywall">${escapeHtml(statusLabel(sub.status))} · ${escapeHtml(PAYWALL.priceLabel)}</button>
+            <button type="button" class="badge badge-btn" data-action="open-paywall">${escapeHtml(statusLabel(sub.status))} · ${escapeHtml(PAYWALL.priceLabel)}</button>
           </div>
           <div class="week-row">${weekDots}</div>
         </header>
@@ -552,7 +545,6 @@ export function mountApp(root: HTMLElement): void {
         ${planBlock}
         ${historyBlock}
         ${fitBlock}
-        ${adBlock}
 
         ${renderAffiliateShop()}
 
@@ -570,7 +562,7 @@ export function mountApp(root: HTMLElement): void {
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.0')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.1')} · 로컬 전용</p>
       </section>`
   }
 
@@ -654,7 +646,7 @@ export function mountApp(root: HTMLElement): void {
       <section class="panel stack">
         <article class="card stack">
           <h2 class="tight">구독 상태 (로컬 목)</h2>
-          <p class="muted tiny">결제 SDK 없음. 테스트용으로 상태를 바꿀 수 있습니다. 실제 결제는 연동 예정입니다.</p>
+          <p class="muted tiny">${escapeHtml(PAYWALL.billingPending)}</p>
           <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
           <p class="muted tiny">${escapeHtml(PAYWALL.annualPlaceholder)}</p>
           <div class="sub-switch" role="group" aria-label="구독 상태">
@@ -698,7 +690,7 @@ export function mountApp(root: HTMLElement): void {
           <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
           <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
         </article>
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.0')} · 습관 가이드</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.1')} · 습관 가이드</p>
       </section>`
   }
 
@@ -713,7 +705,7 @@ export function mountApp(root: HTMLElement): void {
     root.innerHTML = `
       <header class="app-header">
         <h1>여유루틴</h1>
-        <p class="sub">생활 관리 루틴 · 진단·치료 아님</p>
+        <p class="sub">생활 관리 루틴 · 진단·치료 아님 · v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.1')}</p>
       </header>
       ${renderTabs()}
       ${panelBody()}
@@ -735,7 +727,7 @@ export function mountApp(root: HTMLElement): void {
     } catch {
       /* ignore */
     }
-    location.reload()
+    location.href = '/?v=0.2.1&_=' + Date.now()
   }
 
   root.addEventListener('click', (ev) => {

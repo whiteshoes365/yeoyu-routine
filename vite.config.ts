@@ -17,12 +17,15 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'generateSW',
       includeAssets: ['favicon.svg'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,svg,png,woff2}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
-        cacheId: 'yeoyu-routine-v020',
+        skipWaiting: true,
+        clientsClaim: true,
+        cacheId: 'yeoyu-routine-v021',
       },
       manifest: {
         name: '여유루틴',

@@ -333,7 +333,7 @@ export const REVIEW_QUIZ: QuizQuestion[] = [
     prompt: '월 ₩4,900 Pro CTA가 의미하는 것은?',
     choices: [
       '1:1 원격 상담 포함',
-      '맞춤 플랜·핏 가이드·진행 로그 등 Pro 기능 (결제 연동은 추후)',
+      '맞춤 플랜·핏 가이드·진행 로그 등 Pro 기능',
       '수술비 할인',
       '약물 배송',
     ],

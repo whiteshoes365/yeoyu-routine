@@ -8,7 +8,7 @@ export const PAYWALL = {
   proCta: 'Pro 시작 · 월 ₩4,900',
   trialCta: '7일 체험 후 월 ₩4,900',
   priceLabel: 'Pro · 월 ₩4,900',
-  annualPlaceholder: '연간 플랜 · 이번 시즌 미오픈',
+  annualPlaceholder: '연간 미지원',
   footnote:
     '여유루틴은 운동·옷맵시·생활 습관 가이드입니다. 의료 상담·시술·치료 효과를 약속하지 않습니다.',
   billingPending:

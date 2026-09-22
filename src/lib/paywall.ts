@@ -12,7 +12,7 @@ export const PAYWALL = {
   footnote:
     '여유루틴은 운동·옷맵시·생활 습관 가이드입니다. 의료 상담·시술·치료 효과를 약속하지 않습니다.',
   billingPending:
-    '지금은 Free·체험·Pro 상태를 로컬로 바꿔 확인할 수 있습니다. 실제 카드 결제는 아직 없습니다.',
+    '카드 결제 없이 Free·체험·Pro 상태만 바꿔 기능을 확인할 수 있습니다.',
   lockedFeatures: [
     {
       id: 'custom-plan',

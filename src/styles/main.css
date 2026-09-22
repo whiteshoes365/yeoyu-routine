@@ -581,3 +581,5 @@ body {
 .pro-unlocked {
   border-color: #5a9a6e;
 }
+
+.version-chip{margin:8px 0 0;display:inline-block;font-size:.78rem;font-weight:700;color:#0f1f16;background:var(--accent2);padding:4px 10px;border-radius:999px}

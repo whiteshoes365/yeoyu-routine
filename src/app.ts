@@ -562,7 +562,7 @@ export function mountApp(root: HTMLElement): void {
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.1')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.2')} · 로컬 전용</p>
       </section>`
   }
 
@@ -645,7 +645,7 @@ export function mountApp(root: HTMLElement): void {
     return `
       <section class="panel stack">
         <article class="card stack">
-          <h2 class="tight">구독 상태 (로컬 목)</h2>
+          <h2 class="tight">구독 상태 (테스트)</h2>
           <p class="muted tiny">${escapeHtml(PAYWALL.billingPending)}</p>
           <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
           <p class="muted tiny">${escapeHtml(PAYWALL.annualPlaceholder)}</p>
@@ -690,7 +690,7 @@ export function mountApp(root: HTMLElement): void {
           <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
           <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
         </article>
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.1')} · 습관 가이드</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.2')} · 습관 가이드</p>
       </section>`
   }
 
@@ -705,7 +705,8 @@ export function mountApp(root: HTMLElement): void {
     root.innerHTML = `
       <header class="app-header">
         <h1>여유루틴</h1>
-        <p class="sub">생활 관리 루틴 · 진단·치료 아님 · v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.1')}</p>
+        <p class="sub">생활 관리 루틴 · 진단·치료 아님</p>
+        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.2')}</p>
       </header>
       ${renderTabs()}
       ${panelBody()}
@@ -727,7 +728,7 @@ export function mountApp(root: HTMLElement): void {
     } catch {
       /* ignore */
     }
-    location.href = '/?v=0.2.1&_=' + Date.now()
+    location.href = '/?v=0.2.2&_=' + Date.now()
   }
 
   root.addEventListener('click', (ev) => {
@@ -756,7 +757,7 @@ export function mountApp(root: HTMLElement): void {
       | undefined
     if (subBtn === 'free' || subBtn === 'trial' || subBtn === 'pro') {
       setStatus(subBtn)
-      showToast(`구독 상태 → ${statusLabel(subBtn)} (로컬 목)`)
+      showToast(`구독 상태 → ${statusLabel(subBtn)} (테스트)`)
       return
     }
 
@@ -813,7 +814,7 @@ export function mountApp(root: HTMLElement): void {
     if (action === 'paywall-trial') {
       setStatus('trial')
       showPaywall = false
-      showToast(`${PAYWALL.trialCta} 시작 (로컬 목). ${PAYWALL.billingPending}`)
+      showToast(`${PAYWALL.trialCta} 시작 (테스트). ${PAYWALL.billingPending}`)
       return
     }
     if (action === 'refresh-cache') {

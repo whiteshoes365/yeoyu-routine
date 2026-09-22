@@ -338,7 +338,7 @@ export const REVIEW_QUIZ: QuizQuestion[] = [
       '약물 배송',
     ],
     answer: 1,
-    explain: '클리닉 리드·원격 상담 없이 습관·가이드 기능입니다. 지금은 로컬 목 구독.',
+    explain: '클리닉 리드·원격 상담 없이 습관·가이드 기능입니다. 지금은 테스트용 구독 상태입니다.',
   },
 ]
 

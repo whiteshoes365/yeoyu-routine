@@ -22,7 +22,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,svg,png,woff2}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
-        cacheId: 'yeoyu-routine-v015',
+        cacheId: 'yeoyu-routine-v020',
       },
       manifest: {
         name: '여유루틴',

@@ -467,3 +467,121 @@ body {
 .footnote {
   line-height: 1.45;
 }
+
+/* —— v0.2.0 content fill —— */
+.workout-card {
+  border-color: #4a7a5c;
+}
+.workout-meta {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--accent);
+}
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.plan-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.plan-table th,
+.plan-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.plan-table thead th {
+  background: var(--bg2);
+  color: var(--muted);
+  font-weight: 600;
+}
+.plan-table tbody th {
+  width: 2.5rem;
+  color: var(--accent);
+}
+.fit-sec {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.fit-toggle {
+  width: 100%;
+  text-align: left;
+  background: var(--bg2);
+  color: var(--text);
+  border: none;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fit-toggle.open {
+  background: #355844;
+  color: var(--accent);
+}
+.fit-body {
+  padding: 10px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.progress-box {
+  background: var(--bg2);
+  border-radius: 10px;
+  padding: 12px;
+}
+.progress-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.progress-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+  border-radius: 999px;
+}
+.quiz-q {
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.quiz-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+.quiz-choice {
+  text-align: left;
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.quiz-choice.picked {
+  border-color: var(--accent);
+  background: #355844;
+}
+.quiz-choice.correct {
+  border-color: var(--ok);
+  background: #1e4a32;
+}
+.quiz-choice.wrong {
+  border-color: var(--danger);
+  opacity: 0.85;
+}
+.quiz-choice:disabled {
+  cursor: default;
+}
+.pro-unlocked {
+  border-color: #5a9a6e;
+}

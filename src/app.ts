@@ -3,13 +3,26 @@ import {
   CLOTHING_TIPS,
   DISCLAIMER,
   FOOD_TIPS,
+  FREE_WORKOUTS,
   HOSPITAL_QUESTIONS,
   ONBOARDING,
   tipIndexForDate,
+  type WorkoutCard,
 } from './lib/content'
 import { AFFILIATE_BADGE, AFFILIATE_BANNER, AFFILIATE_DISCLOSURE, AFFILIATE_SLOTS } from './lib/affiliate'
 import { isDailyComplete, todayKey, WEEK_LABELS, weekKeys } from './lib/day'
 import { PAYWALL } from './lib/paywall'
+import {
+  FIT_GUIDE_SECTIONS,
+  REVIEW_QUIZ,
+  getPlanForPrefs,
+  loadPrefs,
+  proWorkoutOverlay,
+  savePrefs,
+  type PlanFrequency,
+  type PlanLevel,
+  type UserPrefs,
+} from './lib/proContent'
 import {
   FREE_JOURNAL_LIMIT,
   hasProAccess,
@@ -37,6 +50,7 @@ function uid(): string {
 export function mountApp(root: HTMLElement): void {
   let data = loadData()
   let sub: SubRecord = loadSubscription()
+  let prefs: UserPrefs = loadPrefs()
   let tab: TabId = data.onboardingDone ? 'routine' : 'onboarding'
   let journalDraft = ''
   let journalMood = 3
@@ -44,6 +58,9 @@ export function mountApp(root: HTMLElement): void {
   let showPaywall = false
   let toastMsg: string | null = null
   let toastTimer: ReturnType<typeof setTimeout> | null = null
+  let fitOpenId: string | null = FIT_GUIDE_SECTIONS[0]?.id ?? null
+  let quizAnswers: Record<string, number> = {}
+  let quizSubmitted = false
 
   function persist(): void {
     saveData(data)
@@ -51,6 +68,10 @@ export function mountApp(root: HTMLElement): void {
 
   function persistSub(): void {
     saveSubscription(sub)
+  }
+
+  function persistPrefs(): void {
+    savePrefs(prefs)
   }
 
   function isPro(): boolean {
@@ -146,17 +167,6 @@ export function mountApp(root: HTMLElement): void {
       </article>`
   }
 
-  function renderProUnlocked(title: string, body: string): string {
-    return `
-      <article class="card stack pro-unlocked">
-        <div class="row between">
-          <strong>${escapeHtml(title)}</strong>
-          <span class="badge ok">${escapeHtml(statusLabel(sub.status))}</span>
-        </div>
-        <p class="tiny">${escapeHtml(body)}</p>
-      </article>`
-  }
-
   function renderAffiliateShop(): string {
     const slots = AFFILIATE_SLOTS.map(
       (s) => `
@@ -191,6 +201,208 @@ export function mountApp(root: HTMLElement): void {
           `<button type="button" class="tab${tab === t.id ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`,
       )
       .join('')}</nav>`
+  }
+
+  function renderWorkoutCard(card: WorkoutCard, overlay?: { label: string }): string {
+    const level = overlay
+      ? `${card.levelLabel.replace('초급 고정 (Free)', 'Pro 주간 진행')} · ${overlay.label}`
+      : card.levelLabel
+    return `
+      <article class="card workout-card stack">
+        <div class="row between">
+          <h3 class="tight">${escapeHtml(card.title)}</h3>
+          <span class="badge-soft">${escapeHtml(level)}</span>
+        </div>
+        <p class="workout-meta"><strong>${card.sets}세트</strong> · ${escapeHtml(overlay?.label ?? card.reps)} · 휴식 ${card.restSec}초</p>
+        <ul class="edu-list">
+          ${card.cues.map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
+        </ul>
+        <p class="muted tiny">${escapeHtml(card.note)}</p>
+      </article>`
+  }
+
+  function renderWorkoutCards(): string {
+    const pro = isPro()
+    const overlay = pro ? proWorkoutOverlay(prefs.level, prefs.planWeek) : null
+    return FREE_WORKOUTS.map((c) => {
+      if (c.id === 'pushup' && overlay) {
+        return renderWorkoutCard(c, { label: overlay.pushLabel })
+      }
+      if (c.id === 'back' && overlay) {
+        return renderWorkoutCard(c, { label: overlay.backLabel })
+      }
+      return renderWorkoutCard(c)
+    }).join('')
+  }
+
+  function weeklyCompletionRate(): { done: number; total: number; pct: number } {
+    const keys = weekKeys()
+    let done = 0
+    for (const k of keys) {
+      if (isDailyComplete(data.dailies[k])) done++
+    }
+    const total = keys.length
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100)
+    return { done, total, pct }
+  }
+
+  function renderProPlan(): string {
+    const plan = getPlanForPrefs(prefs.level, prefs.frequency)
+    const weekIdx = Math.min(prefs.planWeek, plan.schedule.length - 1)
+    const week = plan.schedule[weekIdx]
+    const levelBtns: { id: PlanLevel; label: string }[] = [
+      { id: 'beginner', label: '초급' },
+      { id: 'intermediate', label: '중급' },
+      { id: 'maintain', label: '유지' },
+    ]
+    const freqBtns: { id: PlanFrequency; label: string }[] = [
+      { id: '3x', label: '주 3회' },
+      { id: 'daily', label: '월–일' },
+    ]
+    const tableRows = week.days
+      .map(
+        (d) => `<tr>
+          <th scope="row">${escapeHtml(d.day)}</th>
+          <td><strong>${escapeHtml(d.focus)}</strong><br /><span class="muted tiny">${escapeHtml(d.detail)}</span></td>
+        </tr>`,
+      )
+      .join('')
+
+    return `
+      <article class="card stack pro-unlocked">
+        <div class="row between">
+          <strong>맞춤 4–12주 플랜</strong>
+          <span class="badge ok">${escapeHtml(statusLabel(sub.status))}</span>
+        </div>
+        <p class="tiny">${escapeHtml(plan.summary)}</p>
+        <div class="field">
+          <span>수준 (로컬 선택 · 서버 AI 없음)</span>
+          <div class="scale" role="group" aria-label="플랜 수준">
+            ${levelBtns
+              .map(
+                (b) =>
+                  `<button type="button" class="scale-btn${prefs.level === b.id ? ' on' : ''}" data-pref-level="${b.id}">${b.label}</button>`,
+              )
+              .join('')}
+          </div>
+        </div>
+        <div class="field">
+          <span>빈도</span>
+          <div class="scale" role="group" aria-label="운동 빈도">
+            ${freqBtns
+              .map(
+                (b) =>
+                  `<button type="button" class="scale-btn${prefs.frequency === b.id ? ' on' : ''}" data-pref-freq="${b.id}">${b.label}</button>`,
+              )
+              .join('')}
+          </div>
+        </div>
+        <div class="row between wrap">
+          <strong>${escapeHtml(plan.label)} · ${week.week}주차 · ${escapeHtml(week.title)}</strong>
+          <div class="row">
+            <button type="button" class="btn ghost" data-action="plan-week-prev" ${weekIdx === 0 ? 'disabled' : ''}>이전 주</button>
+            <button type="button" class="btn ghost" data-action="plan-week-next" ${weekIdx >= plan.schedule.length - 1 ? 'disabled' : ''}>다음 주</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="plan-table">
+            <thead><tr><th>요일</th><th>내용</th></tr></thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+        <p class="tiny"><strong>이번 주 한식</strong> — ${escapeHtml(week.foodNote)}</p>
+        <p class="muted tiny">${escapeHtml(plan.foodGuide)}</p>
+        <p class="muted tiny">치료·완치·체형 보장이 아닙니다. 통증 시 중단하세요.</p>
+      </article>`
+  }
+
+  function renderProFitGuide(): string {
+    const sections = FIT_GUIDE_SECTIONS.map((sec) => {
+      const open = fitOpenId === sec.id
+      return `
+        <div class="fit-sec">
+          <button type="button" class="fit-toggle${open ? ' open' : ''}" data-fit="${escapeHtml(sec.id)}" aria-expanded="${open}">
+            ${escapeHtml(sec.title)}
+          </button>
+          ${
+            open
+              ? `<div class="fit-body">
+                  ${sec.paragraphs.map((p) => `<p class="tiny">${escapeHtml(p)}</p>`).join('')}
+                </div>`
+              : ''
+          }
+        </div>`
+    }).join('')
+    return `
+      <article class="card stack pro-unlocked">
+        <div class="row between">
+          <strong>프리미엄 핏 가이드 팩</strong>
+          <span class="badge ok">${escapeHtml(statusLabel(sub.status))}</span>
+        </div>
+        <p class="muted tiny">다크티 · 레이어링 · 이너 · 트레이닝웨어. 패션 정보이며 치료·의료가 아닙니다.</p>
+        ${sections}
+        <p class="muted tiny disclose">${escapeHtml(AFFILIATE_DISCLOSURE)}</p>
+      </article>`
+  }
+
+  function renderProProgress(): string {
+    const { done, total, pct } = weeklyCompletionRate()
+    const score = quizSubmitted
+      ? REVIEW_QUIZ.reduce((acc, q) => acc + (quizAnswers[q.id] === q.answer ? 1 : 0), 0)
+      : null
+    const quizBlock = REVIEW_QUIZ.map((q) => {
+      const chosen = quizAnswers[q.id]
+      return `
+        <div class="quiz-q">
+          <p class="tiny"><strong>${escapeHtml(q.prompt)}</strong></p>
+          <div class="quiz-choices">
+            ${q.choices
+              .map((c, i) => {
+                let cls = 'quiz-choice'
+                if (quizSubmitted) {
+                  if (i === q.answer) cls += ' correct'
+                  else if (chosen === i) cls += ' wrong'
+                } else if (chosen === i) cls += ' picked'
+                return `<button type="button" class="${cls}" data-quiz="${escapeHtml(q.id)}" data-qi="${i}" ${quizSubmitted ? 'disabled' : ''}>${escapeHtml(c)}</button>`
+              })
+              .join('')}
+          </div>
+          ${
+            quizSubmitted
+              ? `<p class="muted tiny">${escapeHtml(q.explain)}</p>`
+              : ''
+          }
+        </div>`
+    }).join('')
+
+    return `
+      <article class="card stack pro-unlocked">
+        <div class="row between">
+          <strong>장기 진행 로그 · 복습 퀴즈</strong>
+          <span class="badge ok">${escapeHtml(statusLabel(sub.status))}</span>
+        </div>
+        <div class="progress-box">
+          <p class="tight"><strong>이번 주 완주율</strong> ${pct}% (${done}/${total}일)</p>
+          <div class="progress-bar" aria-hidden="true"><span style="width:${pct}%"></span></div>
+          <p class="muted tiny">푸시업·등·자신감(1–5)을 채운 날 기준. 의료 지표가 아닙니다.</p>
+          ${
+            prefs.quizBest != null
+              ? `<p class="tiny">퀴즈 최고 점수: ${prefs.quizBest}/${REVIEW_QUIZ.length}</p>`
+              : ''
+          }
+        </div>
+        <h3 class="tight">교육 복습 퀴즈</h3>
+        <p class="muted tiny">온보딩·생활 관리 내용 확인용입니다. 의학 시험·진단이 아닙니다. (${REVIEW_QUIZ.length}문항)</p>
+        ${quizBlock}
+        <div class="row wrap">
+          ${
+            quizSubmitted
+              ? `<p class="ok-msg">결과: ${score}/${REVIEW_QUIZ.length}</p>
+                 <button type="button" class="btn ghost" data-action="quiz-reset">다시 풀기</button>`
+              : `<button type="button" class="btn primary" data-action="quiz-submit">채점하기</button>`
+          }
+        </div>
+      </article>`
   }
 
   function renderOnboarding(): string {
@@ -255,28 +467,19 @@ export function mountApp(root: HTMLElement): void {
     }).join('')
 
     const planBlock = pro
-      ? renderProUnlocked(
-          '맞춤 4–12주 플랜',
-          '맞춤 루틴·주간 플랜 UI (로컬 미리보기). 실제 맞춤 생성은 추후 연동됩니다.',
-        )
-      : renderLockedCard('맞춤 4–12주 플랜', '맞춤 루틴·주간 플랜 (Pro)')
-
+      ? renderProPlan()
+      : renderLockedCard('맞춤 4–12주 플랜', '맞춤 루틴·주간 플랜 (Pro) — 초급/중급/유지 · 주 3회 또는 월–일')
     const historyBlock = pro
-      ? renderProUnlocked(
-          '장기 진행 로그',
-          '진행 로그·복습 퀴즈 · 장기 기록 UI (로컬 미리보기).',
-        )
+      ? renderProProgress()
       : renderLockedCard('장기 진행 로그', '진행 로그·복습 퀴즈 · 장기 기록 (Pro)')
-
     const fitBlock = pro
-      ? renderProUnlocked(
-          '프리미엄 핏 가이드 팩',
-          '다크티·레이어링 핏 가이드 팩 UI (로컬 미리보기). 치료·의료 목적이 아닙니다.',
-        )
-      : renderLockedCard('프리미엄 핏 가이드 팩', '다크티·레이어링 핏 가이드 (Pro)')
-
+      ? renderProFitGuide()
+      : renderLockedCard('프리미엄 핏 가이드 팩', '다크티·레이어링·이너·트레이닝웨어 핏 가이드 (Pro)')
     const adBlock = pro
-      ? renderProUnlocked('광고 제거', '광고가 도입되면 Pro에서 제거됩니다. (플레이스홀더)')
+      ? `<article class="card stack pro-unlocked">
+          <div class="row between"><strong>광고 제거</strong><span class="badge ok">${escapeHtml(statusLabel(sub.status))}</span></div>
+          <p class="tiny">광고가 도입되면 Pro에서 제거됩니다. (플레이스홀더)</p>
+        </article>`
       : renderLockedCard('광고 제거', '광고가 도입되면 Pro에서 제거 (선택·플레이스홀더)')
 
     return `
@@ -292,6 +495,8 @@ export function mountApp(root: HTMLElement): void {
           <div class="week-row">${weekDots}</div>
         </header>
         ${renderAntiHypeNotice()}
+
+        ${renderWorkoutCards()}
 
         <article class="card stack">
           <h3>일일 체크</h3>
@@ -330,10 +535,12 @@ export function mountApp(root: HTMLElement): void {
         <article class="card tip">
           <h3>한식 식단 tip</h3>
           <p>${escapeHtml(food)}</p>
+          <p class="muted tiny">팁 ${FOOD_TIPS.length}개 중 날짜별 1개 순환 · 치료식 아님</p>
         </article>
         <article class="card tip">
           <h3>옷 tip</h3>
           <p>${escapeHtml(cloth)}</p>
+          <p class="muted tiny">팁 ${CLOTHING_TIPS.length}개 중 날짜별 1개 순환 · 치료·완치 아님</p>
         </article>
 
         <article class="card stack">
@@ -363,7 +570,7 @@ export function mountApp(root: HTMLElement): void {
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.5')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.0')} · 로컬 전용</p>
       </section>`
   }
 
@@ -470,6 +677,14 @@ export function mountApp(root: HTMLElement): void {
         </article>
 
         <article class="card stack">
+          <h3>플랜 선호 (로컬)</h3>
+          <p class="muted tiny">Pro 맞춤 플랜에 사용됩니다. 서버 AI·원격 처방이 없습니다.</p>
+          <p class="tiny">수준: <strong>${
+            prefs.level === 'beginner' ? '초급' : prefs.level === 'intermediate' ? '중급' : '유지'
+          }</strong> · 빈도: <strong>${prefs.frequency === 'daily' ? '월–일' : '주 3회'}</strong> · ${prefs.planWeek + 1}주차</p>
+        </article>
+
+        <article class="card stack">
           <h3>Free / Pro 요약</h3>
           <p class="tiny"><strong>Free</strong> — ${escapeHtml(PAYWALL.freeBullets)}</p>
           <p class="tiny"><strong>Pro</strong> — ${escapeHtml(PAYWALL.proBullets)}</p>
@@ -483,7 +698,7 @@ export function mountApp(root: HTMLElement): void {
           <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
           <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
         </article>
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.1.5')} · 습관 가이드</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.0')} · 습관 가이드</p>
       </section>`
   }
 
@@ -505,6 +720,22 @@ export function mountApp(root: HTMLElement): void {
       ${renderPaywallModal()}
       ${renderToast()}
     `
+  }
+
+  async function refreshAppCache(): Promise<void> {
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(regs.map((r) => r.unregister()))
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        await Promise.all(keys.map((k) => caches.delete(k)))
+      }
+    } catch {
+      /* ignore */
+    }
+    location.reload()
   }
 
   root.addEventListener('click', (ev) => {
@@ -537,6 +768,37 @@ export function mountApp(root: HTMLElement): void {
       return
     }
 
+    const prefLevel = (t.closest('[data-pref-level]') as HTMLElement | null)?.dataset
+      .prefLevel as PlanLevel | undefined
+    if (prefLevel === 'beginner' || prefLevel === 'intermediate' || prefLevel === 'maintain') {
+      prefs = { ...prefs, level: prefLevel, planWeek: 0 }
+      persistPrefs()
+      render()
+      return
+    }
+    const prefFreq = (t.closest('[data-pref-freq]') as HTMLElement | null)?.dataset
+      .prefFreq as PlanFrequency | undefined
+    if (prefFreq === 'daily' || prefFreq === '3x') {
+      prefs = { ...prefs, frequency: prefFreq, planWeek: 0 }
+      persistPrefs()
+      render()
+      return
+    }
+
+    const fitId = (t.closest('[data-fit]') as HTMLElement | null)?.dataset.fit
+    if (fitId) {
+      fitOpenId = fitOpenId === fitId ? null : fitId
+      render()
+      return
+    }
+
+    const quizEl = t.closest('[data-quiz]') as HTMLElement | null
+    if (quizEl?.dataset.quiz != null && quizEl.dataset.qi != null && !quizSubmitted) {
+      quizAnswers = { ...quizAnswers, [quizEl.dataset.quiz]: Number(quizEl.dataset.qi) }
+      render()
+      return
+    }
+
     const action = (t.closest('[data-action]') as HTMLElement | null)?.dataset.action
     if (action === 'open-paywall') {
       openPaywall()
@@ -560,6 +822,51 @@ export function mountApp(root: HTMLElement): void {
       setStatus('trial')
       showPaywall = false
       showToast(`${PAYWALL.trialCta} 시작 (로컬 목). ${PAYWALL.billingPending}`)
+      return
+    }
+    if (action === 'refresh-cache') {
+      showToast('캐시 지우는 중…')
+      void refreshAppCache()
+      return
+    }
+    if (action === 'plan-week-prev') {
+      prefs = { ...prefs, planWeek: Math.max(0, prefs.planWeek - 1) }
+      persistPrefs()
+      render()
+      return
+    }
+    if (action === 'plan-week-next') {
+      const plan = getPlanForPrefs(prefs.level, prefs.frequency)
+      prefs = {
+        ...prefs,
+        planWeek: Math.min(plan.schedule.length - 1, prefs.planWeek + 1),
+      }
+      persistPrefs()
+      render()
+      return
+    }
+    if (action === 'quiz-submit') {
+      const answered = REVIEW_QUIZ.every((q) => quizAnswers[q.id] != null)
+      if (!answered) {
+        showToast('모든 문항에 답한 뒤 채점하세요.')
+        return
+      }
+      quizSubmitted = true
+      const score = REVIEW_QUIZ.reduce(
+        (acc, q) => acc + (quizAnswers[q.id] === q.answer ? 1 : 0),
+        0,
+      )
+      if (prefs.quizBest == null || score > prefs.quizBest) {
+        prefs = { ...prefs, quizBest: score }
+        persistPrefs()
+      }
+      render()
+      return
+    }
+    if (action === 'quiz-reset') {
+      quizAnswers = {}
+      quizSubmitted = false
+      render()
       return
     }
 

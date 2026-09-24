@@ -9,6 +9,10 @@ export type SubRecord = {
   status: SubscriptionStatus
   /** ISO date when trial started (local mock) */
   trialStartedAt?: string
+  /** Paddle Billing ids from checkout.completed (optional) */
+  paddleCustomerId?: string
+  paddleSubscriptionId?: string
+  paddleTransactionId?: string
 }
 
 export type SubStorageBackend = {
@@ -47,6 +51,10 @@ export function emptySub(): SubRecord {
   return { ...DEFAULT }
 }
 
+function optionalId(v: unknown, prefix: string): string | undefined {
+  return typeof v === 'string' && v.startsWith(prefix) ? v : undefined
+}
+
 export function loadSubscription(): SubRecord {
   try {
     const raw = backend.getItem(SUB_STORAGE_KEY)
@@ -60,6 +68,9 @@ export function loadSubscription(): SubRecord {
       status,
       trialStartedAt:
         typeof parsed.trialStartedAt === 'string' ? parsed.trialStartedAt : undefined,
+      paddleCustomerId: optionalId(parsed.paddleCustomerId, 'ctm_'),
+      paddleSubscriptionId: optionalId(parsed.paddleSubscriptionId, 'sub_'),
+      paddleTransactionId: optionalId(parsed.paddleTransactionId, 'txn_'),
     }
   } catch {
     return emptySub()

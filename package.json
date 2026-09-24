@@ -1,7 +1,7 @@
 {
   "name": "yeoyu-routine",
   "private": true,
-  "version": "0.3.2",
+  "version": "0.4.0",
   "type": "module",
   "description": "여유루틴 — 비수술 생활 관리 루틴·저널 (로컬 전용 PWA)",
   "scripts": {
@@ -14,8 +14,13 @@
   },
   "devDependencies": {
     "@types/bun": "^1.4.2",
+    "@types/node": "^26.6.2",
+    "@vercel/node": "^15.0.0",
     "typescript": "~5.7.2",
     "vite": "^6.0.7",
     "vite-plugin-pwa": "^0.21.1"
+  },
+  "dependencies": {
+    "@paddle/paddle-js": "^1.6.5"
   }
 }

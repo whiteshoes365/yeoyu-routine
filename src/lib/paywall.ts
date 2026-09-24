@@ -6,13 +6,16 @@ export const PAYWALL = {
     '맞춤 루틴·주간 플랜 · 다크티·레이어링 핏 가이드 · 진행 로그·복습 퀴즈',
   freeCta: 'Free 시작하기',
   proCta: 'Pro 시작 · 월 ₩4,900',
-  trialCta: '7일 체험 후 월 ₩4,900',
+  /** Local preview only — not a Paddle trial until configured in dashboard. */
+  trialCta: '로컬 미리보기 · 7일',
   priceLabel: 'Pro · 월 ₩4,900',
   annualPlaceholder: '연간 미지원',
   footnote:
     '여유루틴은 운동·옷맵시·생활 습관 가이드입니다. 의료 상담·시술·치료 효과를 약속하지 않습니다.',
-  billingPending:
-    '카드 결제 없이 Free·체험·Pro 상태만 바꿔 기능을 확인할 수 있습니다.',
+  /** Settings note when mock switcher is visible (dev / sandbox / keys missing). */
+  mockSubNote:
+    '개발·샌드박스용 목업 — 카드 없이 Free·체험·Pro 상태만 바꿉니다.',
+  manageCta: '구독 관리 · 취소',
   lockedFeatures: [
     {
       id: 'custom-plan',

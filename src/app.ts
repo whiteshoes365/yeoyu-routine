@@ -13,6 +13,13 @@ import { AFFILIATE_BADGE, AFFILIATE_BANNER, AFFILIATE_DISCLOSURE, AFFILIATE_SLOT
 import { isDailyComplete, todayKey, WEEK_LABELS, weekKeys } from './lib/day'
 import { PAYWALL } from './lib/paywall'
 import {
+  getCustomerPortalUrl,
+  isMockSubUiEnabled,
+  isPaddleConfigured,
+  openProCheckout,
+  PADDLE_COPY,
+} from './lib/paddleCheckout'
+import {
   FIT_GUIDE_SECTIONS,
   REVIEW_QUIZ,
   getPlanForPrefs,
@@ -114,12 +121,21 @@ export function mountApp(root: HTMLElement): void {
     render()
   }
 
-  function setStatus(status: SubscriptionStatus): void {
+  function setStatus(status: SubscriptionStatus, extras?: Partial<SubRecord>): void {
     sub = {
+      ...sub,
       status,
       trialStartedAt:
         status === 'trial' ? sub.trialStartedAt || new Date().toISOString() : sub.trialStartedAt,
+      ...extras,
     }
+    persistSub()
+    render()
+  }
+
+  function applyUnlocked(rec: SubRecord): void {
+    sub = rec
+    showPaywall = false
     persistSub()
     render()
   }
@@ -196,7 +212,11 @@ export function mountApp(root: HTMLElement): void {
             <button type="button" class="btn ghost" data-action="paywall-free">${escapeHtml(PAYWALL.freeCta)}</button>
             <button type="button" class="btn primary" data-action="paywall-pro">${escapeHtml(PAYWALL.proCta)}</button>
           </div>
-          <button type="button" class="btn link" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>
+          ${
+            isMockSubUiEnabled()
+              ? `<button type="button" class="btn link" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>`
+              : ''
+          }
           <p class="muted tiny footnote">${escapeHtml(PAYWALL.footnote)}</p>
           <button type="button" class="btn ghost" data-action="paywall-close">닫기</button>
         </div>
@@ -607,12 +627,16 @@ export function mountApp(root: HTMLElement): void {
             <button type="button" class="btn ghost" data-action="paywall-free">${escapeHtml(PAYWALL.freeCta)}</button>
             <button type="button" class="btn primary" data-action="open-paywall">${escapeHtml(PAYWALL.proCta)}</button>
           </div>
-          <button type="button" class="btn link" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>
+          ${
+            isMockSubUiEnabled()
+              ? `<button type="button" class="btn link" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>`
+              : ''
+          }
           <p class="muted tiny">${escapeHtml(PAYWALL.footnote)}</p>
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.3.2')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.4.0')} · 로컬 전용</p>
       </section>`
   }
 
@@ -695,27 +719,54 @@ export function mountApp(root: HTMLElement): void {
     return `
       <section class="panel stack">
         <article class="card stack">
-          <h2 class="tight">구독 상태 (테스트)</h2>
-          <p class="muted tiny">${escapeHtml(PAYWALL.billingPending)}</p>
+          <h2 class="tight">구독</h2>
           <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
           <p class="muted tiny">${escapeHtml(PAYWALL.annualPlaceholder)}</p>
-          <div class="sub-switch" role="group" aria-label="구독 상태">
-            ${options
-              .map(
-                (s) =>
-                  `<button type="button" class="scale-btn${sub.status === s ? ' on' : ''}" data-sub="${s}">${escapeHtml(statusLabel(s))}</button>`,
-              )
-              .join('')}
-          </div>
           <p class="tiny">현재: <strong>${escapeHtml(statusLabel(sub.status))}</strong>${
             sub.trialStartedAt
               ? ` · 체험 시작 ${escapeHtml(sub.trialStartedAt.slice(0, 10))}`
               : ''
+          }${
+            isPaddleConfigured()
+              ? ' · Paddle'
+              : ''
           }</p>
+          ${
+            sub.status === 'pro'
+              ? getCustomerPortalUrl()
+                ? `<a class="btn ghost" href="${escapeHtml(getCustomerPortalUrl())}" target="_blank" rel="noopener noreferrer">${escapeHtml(PAYWALL.manageCta)}</a>`
+                : `<p class="muted tiny">${escapeHtml(PADDLE_COPY.portalMissing)}</p>`
+              : ''
+          }
           <div class="row wrap">
-            <button type="button" class="btn ghost" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>
-            <button type="button" class="btn primary" data-action="open-paywall">${escapeHtml(PAYWALL.proCta)}</button>
+            ${
+              isMockSubUiEnabled()
+                ? `<button type="button" class="btn ghost" data-action="paywall-trial">${escapeHtml(PAYWALL.trialCta)}</button>`
+                : ''
+            }
+            <button type="button" class="btn primary" data-action="paywall-pro">${escapeHtml(PAYWALL.proCta)}</button>
           </div>
+          ${
+            isMockSubUiEnabled()
+              ? `<div class="stack mock-sub-block">
+            <h3 class="tight">구독 상태 · 개발·샌드박스용 목업</h3>
+            <p class="muted tiny">${escapeHtml(PAYWALL.mockSubNote)}</p>
+            ${
+              !isPaddleConfigured()
+                ? `<p class="muted tiny">${escapeHtml(PADDLE_COPY.operatorKeysMissing)}</p>`
+                : ''
+            }
+            <div class="sub-switch" role="group" aria-label="구독 상태 목업">
+              ${options
+                .map(
+                  (s) =>
+                    `<button type="button" class="scale-btn${sub.status === s ? ' on' : ''}" data-sub="${s}">${escapeHtml(statusLabel(s))}</button>`,
+                )
+                .join('')}
+            </div>
+          </div>`
+              : ''
+          }
         </article>
 
         <article class="card stack">
@@ -740,7 +791,7 @@ export function mountApp(root: HTMLElement): void {
           <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
           <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
         </article>
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.3.2')} · 습관 가이드</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.4.0')} · 습관 가이드</p>
       </section>`
   }
 
@@ -756,7 +807,7 @@ export function mountApp(root: HTMLElement): void {
       <header class="app-header">
         <h1>여유루틴</h1>
         <p class="sub">생활 관리 루틴 · 진단·치료 아님</p>
-        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.3.2')}</p>
+        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.4.0')}</p>
       </header>
       ${renderTabs()}
       ${panelBody()}
@@ -778,7 +829,7 @@ export function mountApp(root: HTMLElement): void {
     } catch {
       /* ignore */
     }
-    location.href = '/?v=0.3.2&_=' + Date.now()
+    location.href = '/?v=0.4.0&_=' + Date.now()
   }
 
   root.addEventListener('click', (ev) => {
@@ -806,8 +857,9 @@ export function mountApp(root: HTMLElement): void {
       | SubscriptionStatus
       | undefined
     if (subBtn === 'free' || subBtn === 'trial' || subBtn === 'pro') {
+      if (!isMockSubUiEnabled()) return
       setStatus(subBtn)
-      showToast(`구독 상태 → ${statusLabel(subBtn)} (테스트)`)
+      showToast(`구독 상태 → ${statusLabel(subBtn)} (목업)`)
       return
     }
 
@@ -858,13 +910,18 @@ export function mountApp(root: HTMLElement): void {
       return
     }
     if (action === 'paywall-pro') {
-      showToast(PAYWALL.billingPending)
+      void openProCheckout({
+        onToast: showToast,
+        onUnlocked: applyUnlocked,
+        isOperator: isMockSubUiEnabled(),
+      })
       return
     }
     if (action === 'paywall-trial') {
+      if (!isMockSubUiEnabled()) return
       setStatus('trial')
       showPaywall = false
-      showToast(`${PAYWALL.trialCta} 시작 (테스트). ${PAYWALL.billingPending}`)
+      showToast(`${PAYWALL.trialCta} 시작 (로컬 미리보기)`)
       return
     }
     if (action === 'refresh-cache') {

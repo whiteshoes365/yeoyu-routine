@@ -7,7 +7,7 @@
 | 경로 | 역할 |
 |------|------|
 | `checkout.completed` (브라우저) | Pro 언락 → `localStorage` (`yeoyu-routine-sub-v1`) |
-| `/api/paddle-webhook` | 서명 검증 + `subscription.*` / `transaction.completed` 로그 골격. 계정 DB 없음 → 서버 언락 없음 |
+| `/api/paddle-webhook` (self-contained) | 서명 검증 + `subscription.*` / `transaction.completed` 로그 골격. 계정 DB 없음 → 서버 언락 없음 |
 
 ## 대시보드 체크리스트
 

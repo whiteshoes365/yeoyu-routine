@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   CASE_ORDER,
+  CASE_CAUSE_LINE,
   PERSON_CASE_IDS,
   allVerifiedCases,
   badgeForCase,
@@ -166,6 +167,48 @@ describe('dailyCases data integrity', () => {
           if (val.includes(ban)) {
             failures.push(`${skipKey} contains "${ban}"`)
           }
+        }
+      }
+    }
+    expect(failures).toEqual([])
+  })
+})
+
+describe('dailyCases copy style (v0.3.1)', () => {
+  test('fixed cause line is shortened', () => {
+    expect(CASE_CAUSE_LINE).toBe('원인에 따라 경과가 달라요.')
+    expect(CASE_CAUSE_LINE.includes('원인 확인은 진료가 먼저예요.')).toBe(false)
+  })
+
+  test('rendered fields must not contain card meta phrasing', () => {
+    const forbidden = ['카드다', '카드입니다', '설명형'] as const
+    const failures: string[] = []
+    for (const c of allVerifiedCases()) {
+      for (const field of RENDER_FIELDS) {
+        const val = c[field]
+        if (typeof val !== 'string' || !val) continue
+        for (const bad of forbidden) {
+          if (val.includes(bad)) failures.push(`${c.id}.${field} contains "${bad}"`)
+        }
+      }
+    }
+    expect(failures).toEqual([])
+  })
+
+  test('summaryKo/cautionKo do not end with 해라체 「다.」', () => {
+    /** Genuinely needed exceptions (noun-like endings). Keep empty unless required. */
+    const HAERA_END_EXCEPTIONS: ReadonlySet<string> = new Set([
+      // e.g. 'dc-000.summaryKo',
+    ])
+    const failures: string[] = []
+    for (const c of allVerifiedCases()) {
+      for (const field of ['summaryKo', 'cautionKo'] as const) {
+        const key = `${c.id}.${field}`
+        if (HAERA_END_EXCEPTIONS.has(key)) continue
+        const val = c[field]
+        if (typeof val !== 'string' || !val.trim()) continue
+        if (/다\.\s*$/.test(val.trim())) {
+          failures.push(`${key} ends with 다.`)
         }
       }
     }

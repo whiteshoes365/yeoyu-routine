@@ -64,8 +64,7 @@ export type DailyCase = {
 
 export type CaseBadge = '실제 사례' | '연구 결과' | '알아두기'
 
-export const CASE_CAUSE_LINE =
-  '원인에 따라 경과가 달라요. 원인 확인은 진료가 먼저예요.' as const
+export const CASE_CAUSE_LINE = '원인에 따라 경과가 달라요.' as const
 
 const TYPE_LABELS: Record<string, string> = {
   pubertal: '사춘기',

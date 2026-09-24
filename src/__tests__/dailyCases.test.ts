@@ -215,3 +215,20 @@ describe('dailyCases copy style (v0.3.1)', () => {
     expect(failures).toEqual([])
   })
 })
+
+describe('dailyCases leftover phrasing (v0.3.2)', () => {
+  test('rendered fields must not contain 「점도도」 or 「같은 논문」', () => {
+    const forbidden = ['점도도', '같은 논문'] as const
+    const failures: string[] = []
+    for (const c of allVerifiedCases()) {
+      for (const field of RENDER_FIELDS) {
+        const val = c[field]
+        if (typeof val !== 'string' || !val) continue
+        for (const bad of forbidden) {
+          if (val.includes(bad)) failures.push(`${c.id}.${field} contains "${bad}"`)
+        }
+      }
+    }
+    expect(failures).toEqual([])
+  })
+})

@@ -583,3 +583,59 @@ body {
 }
 
 .version-chip{margin:8px 0 0;display:inline-block;font-size:.78rem;font-weight:700;color:#0f1f16;background:var(--accent2);padding:4px 10px;border-radius:999px}
+
+/* 오늘의 사례 */
+.daily-case .case-head {
+  align-items: center;
+  gap: 8px;
+}
+.daily-case .case-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.daily-case .case-badge {
+  background: rgba(168, 213, 181, 0.18);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.daily-case .case-title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.daily-case .case-person {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--accent2);
+  font-weight: 600;
+}
+.daily-case .case-subject {
+  margin: 0;
+}
+.daily-case .case-caution {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border);
+  line-height: 1.45;
+}
+.daily-case .case-cause {
+  margin: 0;
+  line-height: 1.45;
+}
+.daily-case .case-source {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.daily-case .case-source-title {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

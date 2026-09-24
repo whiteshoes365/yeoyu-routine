@@ -34,6 +34,15 @@ import {
 } from './lib/subscription'
 import { getOrCreateDaily, loadData, saveData } from './lib/storage'
 import type { JournalEntry, TabId } from './lib/types'
+import {
+  CASE_CAUSE_LINE,
+  badgeForCase,
+  caseForDate,
+  hasDuration,
+  resolveKind,
+  typeLabel,
+  type DailyCase,
+} from './lib/dailyCases'
 
 function escapeHtml(s: string): string {
   return s
@@ -121,6 +130,45 @@ export function mountApp(root: HTMLElement): void {
 
   function renderAntiHypeNotice(): string {
     return `<aside class="anti-hype" role="note"><strong>제품 추천·판매 없음</strong><p>${escapeHtml(ANTI_HYPE_NOTICE)}</p></aside>`
+  }
+
+  function renderDailyCaseCard(): string {
+    const c: DailyCase | null = caseForDate()
+    if (!c) return ''
+    const badge = badgeForCase(c)
+    const kind = resolveKind(c)
+    const typeChip = typeLabel(c.type)
+    const personLine =
+      kind === 'person'
+        ? `<p class="case-person">${escapeHtml(c.personLabel)}</p>`
+        : `<p class="case-subject muted tiny">대상 · ${escapeHtml(c.personLabel)}</p>`
+    const durationBlock = hasDuration(c)
+      ? `<p class="tiny"><strong>기간</strong> — ${escapeHtml(c.durationKo!.trim())}</p>`
+      : ''
+    const sourceTitle = c.sourceTitle
+      ? `<span class="muted tiny case-source-title">${escapeHtml(c.sourceTitle)}</span>`
+      : ''
+    return `
+      <article class="card stack daily-case" aria-label="오늘의 사례">
+        <div class="row between wrap case-head">
+          <h3 class="tight">오늘의 사례</h3>
+          <div class="case-badges">
+            <span class="badge case-badge">${escapeHtml(badge)}</span>
+            <span class="badge-soft">${escapeHtml(typeChip)}</span>
+          </div>
+        </div>
+        <h4 class="case-title tight">${escapeHtml(c.titleKo)}</h4>
+        ${personLine}
+        <p class="tiny">${escapeHtml(c.summaryKo)}</p>
+        <p class="tiny"><strong>도움이 된 것</strong> — ${escapeHtml(c.whatHelpedKo)}</p>
+        ${durationBlock}
+        <p class="tiny case-caution">${escapeHtml(c.cautionKo)}</p>
+        <p class="muted tiny case-cause">${escapeHtml(CASE_CAUSE_LINE)}</p>
+        <p class="case-source">
+          <a class="btn link" href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer">출처 보기</a>
+          ${sourceTitle}
+        </p>
+      </article>`
   }
 
   function renderToast(): string {
@@ -489,6 +537,8 @@ export function mountApp(root: HTMLElement): void {
         </header>
         ${renderAntiHypeNotice()}
 
+        ${renderDailyCaseCard()}
+
         ${renderWorkoutCards()}
 
         <article class="card stack">
@@ -562,7 +612,7 @@ export function mountApp(root: HTMLElement): void {
         </div>
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.3')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.3.0')} · 로컬 전용</p>
       </section>`
   }
 
@@ -690,7 +740,7 @@ export function mountApp(root: HTMLElement): void {
           <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
           <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
         </article>
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.3')} · 습관 가이드</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.3.0')} · 습관 가이드</p>
       </section>`
   }
 
@@ -706,7 +756,7 @@ export function mountApp(root: HTMLElement): void {
       <header class="app-header">
         <h1>여유루틴</h1>
         <p class="sub">생활 관리 루틴 · 진단·치료 아님</p>
-        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.2.3')}</p>
+        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.3.0')}</p>
       </header>
       ${renderTabs()}
       ${panelBody()}
@@ -728,7 +778,7 @@ export function mountApp(root: HTMLElement): void {
     } catch {
       /* ignore */
     }
-    location.href = '/?v=0.2.3&_=' + Date.now()
+    location.href = '/?v=0.3.0&_=' + Date.now()
   }
 
   root.addEventListener('click', (ev) => {

@@ -1,11 +1,13 @@
 {
   "name": "yeoyu-routine",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.3.0",
   "type": "module",
   "description": "여유루틴 — 비수술 생활 관리 루틴·저널 (로컬 전용 PWA)",
   "scripts": {
     "dev": "vite",
+    "sync:cases": "bun run scripts/sync-cases.ts",
+    "prebuild": "bun run scripts/sync-cases.ts",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "bun test src"

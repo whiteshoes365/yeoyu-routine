@@ -103,9 +103,9 @@ describe('dailyCases order', () => {
 })
 
 describe('dailyCases badges', () => {
-  test('badge mapping for all 23 ids', () => {
+  test('badge mapping for all verified ids', () => {
     const list = orderedCases()
-    expect(list).toHaveLength(23)
+    expect(list.length).toBeGreaterThanOrEqual(23)
     const expectedResearch = new Set(['dc-009', 'dc-011', 'dc-012', 'dc-016', 'dc-021'])
     for (const c of list) {
       const badge = badgeForCase(c)

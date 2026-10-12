@@ -64,15 +64,42 @@ describe('dailyCases rotation', () => {
 })
 
 describe('dailyCases order', () => {
-  test('no two person cases adjacent including wrap', () => {
-    const list = orderedCases()
-    const ids = list.map((c) => c.id)
+  test('no two person cases adjacent within fixed CASE_ORDER (incl. wrap)', () => {
+    const ids = [...CASE_ORDER]
     expect(ids.length).toBeGreaterThan(1)
     for (let i = 0; i < ids.length; i++) {
       const a = ids[i]!
       const b = ids[(i + 1) % ids.length]!
       expect(PERSON_CASE_IDS.has(a) && PERSON_CASE_IDS.has(b)).toBe(false)
     }
+  })
+
+  test('person-person adjacency in full rotation is limited to known appended pairs', () => {
+    /**
+     * v0.4.3: dc-024–dc-033 relabelled to 실제 사례 without reordering (approved).
+     * These adjacent pairs are known and accepted until a reorder is approved.
+     * Any NEW adjacent pair fails this test.
+     */
+    const KNOWN_ADJACENT: readonly string[] = [
+      'dc-024|dc-025',
+      'dc-025|dc-026',
+      'dc-026|dc-027',
+      'dc-027|dc-028',
+      'dc-028|dc-029',
+      'dc-029|dc-030',
+      'dc-030|dc-031',
+      'dc-031|dc-032',
+      'dc-032|dc-033',
+      'dc-033|dc-034',
+    ]
+    const ids = orderedCases().map((c) => c.id)
+    const pairs: string[] = []
+    for (let i = 0; i < ids.length; i++) {
+      const a = ids[i]!
+      const b = ids[(i + 1) % ids.length]!
+      if (PERSON_CASE_IDS.has(a) && PERSON_CASE_IDS.has(b)) pairs.push(`${a}|${b}`)
+    }
+    expect(pairs).toEqual([...KNOWN_ADJACENT])
   })
 
   test('CASE_ORDER covers current 23 and positions stay first', () => {

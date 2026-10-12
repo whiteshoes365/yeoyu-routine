@@ -25,7 +25,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        cacheId: 'yeoyu-routine-v041',
+        cacheId: 'yeoyu-routine-v042',
       },
       manifest: {
         name: '여유루틴',

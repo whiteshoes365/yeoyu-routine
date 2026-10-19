@@ -6,6 +6,7 @@ import {
   FREE_WORKOUTS,
   HOSPITAL_QUESTIONS,
   ONBOARDING,
+  TEEN_WORKOUTS,
   tipIndexForDate,
   type WorkoutCard,
 } from './lib/content'
@@ -42,10 +43,26 @@ import {
 import { getOrCreateDaily, loadData, saveData } from './lib/storage'
 import type { JournalEntry, TabId } from './lib/types'
 import {
+  ADULT_COMPRESSION,
+  AGE_GROUPS,
+  AGE_LABELS,
+  TEEN_COPY,
+  isAgeGroup,
+  isTeen,
+  loadAgeGroup,
+  saveAgeGroup,
+  type AgeGroup,
+} from './lib/ageGroup'
+import { guidesForAge, type GuideArticle } from './lib/guides'
+import {
   CASE_CAUSE_LINE,
   badgeForCase,
-  caseForDate,
+  caseIndexForSeoulDate,
+  caseMatchesAge,
   hasDuration,
+  orderedCases,
+  rotationForAge,
+  seoulDateKey,
   resolveKind,
   typeLabel,
   type DailyCase,
@@ -77,6 +94,19 @@ export function mountApp(root: HTMLElement): void {
   let fitOpenId: string | null = FIT_GUIDE_SECTIONS[0]?.id ?? null
   let quizAnswers: Record<string, number> = {}
   let quizSubmitted = false
+  /** v0.5.0 age group — localStorage only (code string). */
+  let ageGroup: AgeGroup | null = loadAgeGroup()
+  let caseView: 'mine' | 'all' = 'mine'
+  let caseStep = 0
+  let guideShowAll = false
+
+  function teen(): boolean {
+    return isTeen(ageGroup)
+  }
+
+  function ageLabel(g: AgeGroup | null): string {
+    return g ? AGE_LABELS[g] : '선택 안 함'
+  }
 
   function persist(): void {
     saveData(data)
@@ -148,8 +178,17 @@ export function mountApp(root: HTMLElement): void {
     return `<aside class="anti-hype" role="note"><strong>제품 추천·판매 없음</strong><p>${escapeHtml(ANTI_HYPE_NOTICE)}</p></aside>`
   }
 
+  function currentCaseList(): { list: DailyCase[]; fallback: boolean } {
+    if (caseView === 'all' || !ageGroup) return { list: orderedCases(), fallback: false }
+    const anyMatch = orderedCases().some((c) => caseMatchesAge(c, ageGroup!))
+    return { list: rotationForAge(ageGroup), fallback: !anyMatch }
+  }
+
   function renderDailyCaseCard(): string {
-    const c: DailyCase | null = caseForDate()
+    const { list, fallback } = currentCaseList()
+    if (list.length === 0) return ''
+    const base = caseIndexForSeoulDate(seoulDateKey(), list.length)
+    const c: DailyCase | undefined = list[(((base + caseStep) % list.length) + list.length) % list.length]
     if (!c) return ''
     const badge = badgeForCase(c)
     const kind = resolveKind(c)
@@ -167,12 +206,19 @@ export function mountApp(root: HTMLElement): void {
     return `
       <article class="card stack daily-case" aria-label="오늘의 사례">
         <div class="row between wrap case-head">
-          <h3 class="tight">오늘의 사례</h3>
+          <h3 class="tight">오늘의 사례${caseStep !== 0 ? ' · 다른 사례' : ''}</h3>
           <div class="case-badges">
             <span class="badge case-badge">${escapeHtml(badge)}</span>
             <span class="badge-soft">${escapeHtml(typeChip)}</span>
           </div>
         </div>
+        <p class="muted tiny case-view-line">${
+          caseView === 'all' || !ageGroup
+            ? '전체 연령대 사례를 보고 있어요.'
+            : fallback
+              ? `${escapeHtml(ageLabel(ageGroup))} 사례가 아직 없어 전체 사례를 보여 드려요.`
+              : `내 연령대(${escapeHtml(ageLabel(ageGroup))}) 사례를 먼저 보여 드려요.`
+        }</p>
         <h4 class="case-title tight">${escapeHtml(c.titleKo)}</h4>
         ${personLine}
         <p class="tiny">${escapeHtml(c.summaryKo)}</p>
@@ -184,7 +230,93 @@ export function mountApp(root: HTMLElement): void {
           <a class="btn link" href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer">출처 보기</a>
           ${sourceTitle}
         </p>
+        <p class="muted tiny case-ages">대상 연령대 · ${escapeHtml((c.ageGroups ?? []).map((g) => AGE_LABELS[g]).join(', '))}</p>
+        <div class="row wrap case-nav">
+          <button type="button" class="btn ghost" data-action="case-next">다른 사례 보기</button>
+          ${
+            ageGroup
+              ? caseView === 'all'
+                ? `<button type="button" class="btn link" data-action="case-view-mine">내 연령대만 보기</button>`
+                : `<button type="button" class="btn link" data-action="case-view-all">전체 보기</button>`
+              : ''
+          }
+        </div>
       </article>`
+  }
+
+  function renderAgePicker(firstRun: boolean): string {
+    const btns = AGE_GROUPS.map(
+      (g) =>
+        `<button type="button" class="scale-btn age-btn${ageGroup === g ? ' on' : ''}" data-age="${g}">${escapeHtml(AGE_LABELS[g])}</button>`,
+    ).join('')
+    return `
+      <article class="card stack age-picker" aria-label="연령대 선택">
+        <h2 class="tight">${firstRun ? '먼저 연령대를 골라 주세요' : '연령대'}</h2>
+        <p class="tiny">연령대에 맞는 오늘의 사례와 가이드를 먼저 보여 드려요. ${
+          firstRun ? '설정에서 언제든 바꿀 수 있어요.' : `지금: <strong>${escapeHtml(ageLabel(ageGroup))}</strong>`
+        }</p>
+        <div class="age-grid" role="group" aria-label="연령대">${btns}</div>
+        <p class="muted tiny">이 기기(localStorage)에만 저장돼요. 생년월일·이름 같은 다른 개인정보는 받지 않아요.</p>
+      </article>`
+  }
+
+  function renderTeenNotice(): string {
+    if (!teen()) return ''
+    return `
+      <aside class="card notice teen-notice stack" role="note" aria-label="${escapeHtml(TEEN_COPY.guardianTitle)}">
+        <strong>${escapeHtml(TEEN_COPY.guardianTitle)}</strong>
+        <p class="tiny">${escapeHtml(TEEN_COPY.guardianNotice)}</p>
+      </aside>`
+  }
+
+  function renderCompressionCard(): string {
+    const title = teen() ? TEEN_COPY.compressionTitle : ADULT_COMPRESSION.title
+    const body = teen() ? TEEN_COPY.compression : ADULT_COMPRESSION.body
+    return `
+      <article class="card tip compression-card${teen() ? ' teen-soft' : ''}">
+        <h3>${escapeHtml(title)}</h3>
+        <p class="tiny">${escapeHtml(body)}</p>
+      </article>`
+  }
+
+  function renderTeenProBlocked(): string {
+    return `
+      <div class="card stack teen-pro-blocked" role="note" aria-label="${escapeHtml(TEEN_COPY.proBlockedTitle)}">
+        <h3 class="tight">${escapeHtml(TEEN_COPY.proBlockedTitle)}</h3>
+        <p class="tiny">${escapeHtml(TEEN_COPY.proBlocked)}</p>
+        <button type="button" class="btn primary" disabled aria-disabled="true">Pro 결제 사용 불가 (10대)</button>
+      </div>`
+  }
+
+  function renderGuideArticle(a: GuideArticle, open: boolean): string {
+    return `
+      <details class="card guide-article"${open ? ' open' : ''}>
+        <summary><strong>${escapeHtml(a.title)}</strong>
+          <span class="muted tiny"> · ${escapeHtml(a.ageGroups.map((g) => AGE_LABELS[g]).join(', '))}</span></summary>
+        <ul class="edu-list">${a.paragraphs.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
+      </details>`
+  }
+
+  function renderGuides(): string {
+    const { mine, others } = guidesForAge(ageGroup)
+    const head = ageGroup
+      ? `내 연령대(${escapeHtml(ageLabel(ageGroup))}) 가이드를 먼저 보여 드려요.`
+      : '연령대를 고르면 맞는 가이드를 먼저 보여 드려요.'
+    return `
+      <section class="stack guides" aria-label="가이드">
+        <h2 class="tight">가이드</h2>
+        <p class="muted tiny">${head}</p>
+        ${mine.map((a, i) => renderGuideArticle(a, i === 0)).join('')}
+        ${
+          others.length > 0
+            ? guideShowAll
+              ? `<h3 class="tight">다른 연령대 가이드</h3>
+                 ${others.map((a) => renderGuideArticle(a, false)).join('')}
+                 <button type="button" class="btn link" data-action="guide-mine">내 연령대만 보기</button>`
+              : `<button type="button" class="btn link" data-action="guide-all">전체 보기 (다른 연령대 ${others.length}개)</button>`
+            : ''
+        }
+      </section>`
   }
 
   function renderToast(): string {
@@ -194,6 +326,17 @@ export function mountApp(root: HTMLElement): void {
 
   function renderPaywallModal(): string {
     if (!showPaywall) return ''
+    if (teen()) {
+      return `
+      <div class="modal-backdrop" data-action="paywall-close" role="presentation">
+        <div class="modal card stack" role="dialog" aria-labelledby="paywall-title" data-stop>
+          <h2 id="paywall-title" class="tight">${escapeHtml(TEEN_COPY.proBlockedTitle)}</h2>
+          <p class="tiny">${escapeHtml(TEEN_COPY.proBlocked)}</p>
+          <p class="muted tiny footnote">${escapeHtml(PAYWALL.footnote)}</p>
+          <button type="button" class="btn ghost" data-action="paywall-close">닫기</button>
+        </div>
+      </div>`
+    }
     return `
       <div class="modal-backdrop" data-action="paywall-close" role="presentation">
         <div class="modal card stack" role="dialog" aria-labelledby="paywall-title" data-stop>
@@ -231,7 +374,11 @@ export function mountApp(root: HTMLElement): void {
           <span class="badge pro-badge">Pro</span>
         </div>
         <p class="muted tiny">${escapeHtml(desc)}</p>
-        <button type="button" class="btn primary" data-action="open-paywall">잠금 해제 · ${escapeHtml(PAYWALL.priceLabel)}</button>
+        ${
+          teen()
+            ? `<p class="tiny teen-lock-msg">${escapeHtml(TEEN_COPY.proBlockedTitle)} — 10대는 Pro 결제를 할 수 없어요. 보호자와 먼저 상의해 주세요.</p>`
+            : `<button type="button" class="btn primary" data-action="open-paywall">잠금 해제 · ${escapeHtml(PAYWALL.priceLabel)}</button>`
+        }
       </article>`
   }
 
@@ -258,7 +405,7 @@ export function mountApp(root: HTMLElement): void {
 
   function renderTabs(): string {
     const items: { id: TabId; label: string }[] = [
-      { id: 'onboarding', label: '온보딩교육' },
+      { id: 'onboarding', label: '교육·가이드' },
       { id: 'routine', label: '오늘루틴' },
       { id: 'journal', label: '익명저널' },
       { id: 'settings', label: '설정' },
@@ -290,6 +437,12 @@ export function mountApp(root: HTMLElement): void {
   }
 
   function renderWorkoutCards(): string {
+    if (teen()) {
+      return (
+        TEEN_WORKOUTS.map((c) => renderWorkoutCard(c)).join('') +
+        `<p class="muted tiny teen-workout-note">${escapeHtml(TEEN_COPY.workoutNote)}</p>`
+      )
+    }
     const pro = isPro()
     const overlay = pro ? proWorkoutOverlay(prefs.level, prefs.planWeek) : null
     return FREE_WORKOUTS.map((c) => {
@@ -474,10 +627,18 @@ export function mountApp(root: HTMLElement): void {
   }
 
   function renderOnboarding(): string {
+    if (!ageGroup) {
+      return `
+      <section class="panel stack">
+        ${renderDisclaimer(true)}
+        ${renderAgePicker(true)}
+      </section>`
+    }
     const stage = data.onboardingStage
     const s = ONBOARDING[stage]
     return `
       <section class="panel stack">
+        ${renderTeenNotice()}
         ${renderDisclaimer(true)}
         ${renderAntiHypeNotice()}
         <div class="stage-dots" aria-label="교육 단계">
@@ -503,6 +664,7 @@ export function mountApp(root: HTMLElement): void {
             ? `<button type="button" class="btn link" data-action="ob-skip">나중에 보기 (스킵)</button>`
             : ''
         }
+        ${renderGuides()}
       </section>`
   }
 
@@ -513,7 +675,7 @@ export function mountApp(root: HTMLElement): void {
     const keys = weekKeys()
     const food = FOOD_TIPS[tipIndexForDate(date, FOOD_TIPS.length)]
     const cloth = CLOTHING_TIPS[tipIndexForDate(date + 'c', CLOTHING_TIPS.length)]
-    const pro = isPro()
+    const pro = isPro() && !teen()
 
     const weekDots = keys
       .map((k, i) => {
@@ -555,11 +717,14 @@ export function mountApp(root: HTMLElement): void {
           </div>
           <div class="week-row">${weekDots}</div>
         </header>
+        ${ageGroup ? '' : renderAgePicker(false)}
+        ${renderTeenNotice()}
         ${renderAntiHypeNotice()}
 
         ${renderDailyCaseCard()}
 
         ${renderWorkoutCards()}
+        ${renderCompressionCard()}
 
         <article class="card stack">
           <h3>일일 체크</h3>
@@ -618,7 +783,10 @@ export function mountApp(root: HTMLElement): void {
 
         ${renderAffiliateShop()}
 
-        <div class="card paywall-cta stack">
+        ${
+          teen()
+            ? renderTeenProBlocked()
+            : `<div class="card paywall-cta stack">
           <h3>${escapeHtml(PAYWALL.headline)}</h3>
           <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
           <p class="tiny"><strong>Free</strong> — ${escapeHtml(PAYWALL.freeBullets)}</p>
@@ -633,10 +801,11 @@ export function mountApp(root: HTMLElement): void {
               : ''
           }
           <p class="muted tiny">${escapeHtml(PAYWALL.footnote)}</p>
-        </div>
+        </div>`
+        }
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.4.4')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.0')} · 로컬 전용</p>
       </section>`
   }
 
@@ -716,8 +885,28 @@ export function mountApp(root: HTMLElement): void {
 
   function renderSettings(): string {
     const options: SubscriptionStatus[] = ['free', 'trial', 'pro']
+    if (teen()) {
+      return `
+      <section class="panel stack">
+        ${renderAgePicker(false)}
+        ${renderTeenNotice()}
+        <article class="card stack">
+          <h2 class="tight">구독</h2>
+          <p class="tiny">현재: <strong>${escapeHtml(statusLabel(sub.status))}</strong></p>
+        </article>
+        ${renderTeenProBlocked()}
+        ${renderDisclaimer(false)}
+        <article class="card stack">
+          <h3>앱 캐시</h3>
+          <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
+          <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
+        </article>
+        ${settingsFooter()}
+      </section>`
+    }
     return `
       <section class="panel stack">
+        ${renderAgePicker(false)}
         <article class="card stack">
           <h2 class="tight">구독</h2>
           <p class="price-tag">${escapeHtml(PAYWALL.priceLabel)}</p>
@@ -791,8 +980,12 @@ export function mountApp(root: HTMLElement): void {
           <p class="muted tiny">화면이 예전 문구면 Service Worker 캐시일 수 있습니다. 아래로 강제 새로고침하세요.</p>
           <button type="button" class="btn primary" data-action="refresh-cache">앱 캐시 새로고침</button>
         </article>
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.4.4')} · 습관 가이드</p>
+        ${settingsFooter()}
       </section>`
+  }
+
+  function settingsFooter(): string {
+    return `<p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.0')} · 습관 가이드</p>`
   }
 
   function panelBody(): string {
@@ -807,7 +1000,7 @@ export function mountApp(root: HTMLElement): void {
       <header class="app-header">
         <h1>여유루틴</h1>
         <p class="sub">생활 관리 루틴 · 진단·치료 아님</p>
-        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.4.4')}</p>
+        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.0')}</p>
       </header>
       ${renderTabs()}
       ${panelBody()}
@@ -829,7 +1022,7 @@ export function mountApp(root: HTMLElement): void {
     } catch {
       /* ignore */
     }
-    location.href = '/?v=0.4.4&_=' + Date.now()
+    location.href = '/?v=0.5.0&_=' + Date.now()
   }
 
   root.addEventListener('click', (ev) => {
@@ -858,6 +1051,7 @@ export function mountApp(root: HTMLElement): void {
       | undefined
     if (subBtn === 'free' || subBtn === 'trial' || subBtn === 'pro') {
       if (!isMockSubUiEnabled()) return
+      if (teen() && subBtn !== 'free') return
       setStatus(subBtn)
       showToast(`구독 상태 → ${statusLabel(subBtn)} (목업)`)
       return
@@ -894,7 +1088,39 @@ export function mountApp(root: HTMLElement): void {
       return
     }
 
+    const ageBtn = (t.closest('[data-age]') as HTMLElement | null)?.dataset.age
+    if (isAgeGroup(ageBtn)) {
+      ageGroup = ageBtn
+      saveAgeGroup(ageBtn)
+      caseView = 'mine'
+      caseStep = 0
+      guideShowAll = false
+      if (isTeen(ageBtn)) showPaywall = false
+      showToast(`연령대 → ${AGE_LABELS[ageBtn]} (이 기기에만 저장)`)
+      return
+    }
+
     const action = (t.closest('[data-action]') as HTMLElement | null)?.dataset.action
+    if (action === 'case-next') {
+      caseStep += 1
+      render()
+      return
+    }
+    if (action === 'case-view-all' || action === 'case-view-mine') {
+      caseView = action === 'case-view-all' ? 'all' : 'mine'
+      caseStep = 0
+      render()
+      return
+    }
+    if (action === 'guide-all' || action === 'guide-mine') {
+      guideShowAll = action === 'guide-all'
+      render()
+      return
+    }
+    if (teen() && (action === 'paywall-pro' || action === 'paywall-trial')) {
+      showToast(TEEN_COPY.proBlockedTitle + ' — 10대는 Pro 결제를 할 수 없어요.')
+      return
+    }
     if (action === 'open-paywall') {
       openPaywall()
       return

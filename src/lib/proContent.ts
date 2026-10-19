@@ -1,3 +1,5 @@
+import type { AgeGroup } from './ageGroup'
+
 /** Pro-only local content — no server AI, no coaching, no medical promises. */
 
 export type PlanLevel = 'beginner' | 'intermediate' | 'maintain'
@@ -170,6 +172,8 @@ export function proWorkoutOverlay(
 export type FitSection = {
   id: string
   title: string
+  /** v0.5.0 target age groups */
+  ageGroups: AgeGroup[]
   paragraphs: string[]
 }
 
@@ -177,6 +181,7 @@ export const FIT_GUIDE_SECTIONS: FitSection[] = [
   {
     id: 'dark-tee',
     title: '다크티 가이드',
+    ageGroups: ['10s', '20-30s', '40-50s', '60s+'],
     paragraphs: [
       '네이비·차콜·블랙 단색 티는 밝은 파스텔보다 실루엣을 차분하게 보이게 하는 선택이 많습니다.',
       '어깨선이 맞고 소매·기장이 자연스러운 레귤러 핏을 우선하세요. 한 치수 작은 타이트는 부담이 커질 수 있습니다.',
@@ -188,6 +193,7 @@ export const FIT_GUIDE_SECTIONS: FitSection[] = [
   {
     id: 'layering',
     title: '레이어링 가이드',
+    ageGroups: ['10s', '20-30s', '40-50s', '60s+'],
     paragraphs: [
       '얇은 이너 + 셔츠/가디건/라이트 자켓 한 겹이 기본 공식입니다. 「한 겹」이 실루엣을 부드럽게 보이게 하는 경우가 많습니다.',
       '셔츠는 위·아래 단추만 잠그고 가운데를 여유 있게 두거나, 가디건 앞선을 세로 라인으로 활용해 보세요.',
@@ -199,6 +205,7 @@ export const FIT_GUIDE_SECTIONS: FitSection[] = [
   {
     id: 'inner',
     title: '이너 가이드',
+    ageGroups: ['10s', '20-30s', '40-50s', '60s+'],
     paragraphs: [
       '이너는 겉옷 비침·주름을 줄이는 역할입니다. 너무 두꺼우면 답답하고, 너무 타이트하면 라인이 강조될 수 있습니다.',
       '소재: 면·모달 등 부드러운 단색. 땀 나는 날은 속건 소재를 홈트용으로 분리해 두세요.',
@@ -210,6 +217,7 @@ export const FIT_GUIDE_SECTIONS: FitSection[] = [
   {
     id: 'training',
     title: '트레이닝웨어 가이드',
+    ageGroups: ['10s', '20-30s', '40-50s', '60s+'],
     paragraphs: [
       '푸시업·등 루틴 날: 팔 움직임이 자유로운 상의, 미끄럽지 않은 바닥·매트.',
       '외출 전환: 땀이 식은 뒤 깨끗한 다크티로 갈아입으면 「옷·자신감」 체크와 잘 맞습니다.',

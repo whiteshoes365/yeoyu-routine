@@ -639,3 +639,40 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* v0.5.0 age groups */
+.age-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.age-btn {
+  padding: 14px 0;
+  font-size: 1rem;
+}
+.teen-notice {
+  border: 2px solid var(--accent2);
+  background: rgba(240, 193, 74, 0.1);
+}
+.teen-notice strong {
+  color: var(--accent2);
+}
+.teen-pro-blocked {
+  border: 1px dashed var(--accent2);
+}
+.teen-lock-msg {
+  color: var(--accent2);
+}
+.teen-soft h3 {
+  color: var(--accent2);
+}
+.case-nav {
+  gap: 8px;
+}
+.guide-article summary {
+  cursor: pointer;
+  line-height: 1.4;
+}
+.guide-article[open] summary {
+  margin-bottom: 6px;
+}

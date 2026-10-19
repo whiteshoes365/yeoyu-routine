@@ -1,4 +1,5 @@
 import rawCases from '../data/daily-cases.json'
+import { isAgeGroup, type AgeGroup } from './ageGroup'
 
 /** Fixed interleaved order: person cases never adjacent (incl. wrap). */
 export const CASE_ORDER: readonly string[] = [
@@ -61,6 +62,8 @@ export type DailyCase = {
   type: string
   sourceTier: string
   region: string
+  /** v0.5.0: target age groups (codes from AGE_GROUPS). Required, non-empty. */
+  ageGroups: AgeGroup[]
   personLabel: string
   titleKo: string
   summaryKo: string
@@ -151,8 +154,8 @@ export function caseIndexForSeoulDate(dateKey: string, len: number): number {
   return dayNumberFromSeoulDate(dateKey) % len
 }
 
-export function caseForDate(d: Date = new Date()): DailyCase | null {
-  const list = orderedCases()
+export function caseForDate(d: Date = new Date(), group: AgeGroup | null = null): DailyCase | null {
+  const list = group ? rotationForAge(group) : orderedCases()
   if (list.length === 0) return null
   const key = seoulDateKey(d)
   const idx = caseIndexForSeoulDate(key, list.length)
@@ -188,4 +191,70 @@ export function hasDuration(c: DailyCase): boolean {
 /** All verified cases (JSON file order). */
 export function allVerifiedCases(): DailyCase[] {
   return allRaw.filter((c) => c.verified === true)
+}
+
+/** True when the case carries a non-empty, valid ageGroups array. */
+export function hasValidAgeGroups(c: DailyCase): boolean {
+  return (
+    Array.isArray(c.ageGroups) &&
+    c.ageGroups.length > 0 &&
+    c.ageGroups.every((g) => isAgeGroup(g)) &&
+    new Set(c.ageGroups).size === c.ageGroups.length
+  )
+}
+
+export function caseMatchesAge(c: DailyCase, group: AgeGroup): boolean {
+  return Array.isArray(c.ageGroups) && c.ageGroups.includes(group)
+}
+
+function isPersonCase(c: DailyCase): boolean {
+  return resolveKind(c) === 'person'
+}
+
+/**
+ * Deterministic re-spacing for a filtered rotation. Keeps the relative order of
+ * 실제 사례 and of the other cases (each as in the global rotation), and places the
+ * j-th 실제 사례 at index floor(j·N/P). When P ≤ N/2 no two 실제 사례 touch (incl. wrap);
+ * otherwise adjacency is the unavoidable minimum P − (N − P). Global CASE_ORDER is untouched.
+ */
+export function spreadPersons(list: readonly DailyCase[]): DailyCase[] {
+  const persons = list.filter((c) => isPersonCase(c))
+  const others = list.filter((c) => !isPersonCase(c))
+  const n = list.length
+  const p = persons.length
+  if (p === 0 || others.length === 0) return [...list]
+  const personSlots = new Set<number>()
+  for (let j = 0; j < p; j++) personSlots.add(Math.floor((j * n) / p))
+  const out: DailyCase[] = []
+  let pi = 0
+  let oi = 0
+  for (let i = 0; i < n; i++) {
+    if (personSlots.has(i)) out.push(persons[pi++]!)
+    else out.push(others[oi++]!)
+  }
+  return out
+}
+
+/**
+ * Rotation for one age group: cases tagged with the group, in global rotation order,
+ * re-spaced so 실제 사례 are not adjacent where possible. Falls back to the full
+ * rotation when no case matches.
+ */
+export function rotationForAge(group: AgeGroup): DailyCase[] {
+  const all = orderedCases()
+  const filtered = all.filter((c) => caseMatchesAge(c, group))
+  if (filtered.length === 0) return all
+  return spreadPersons(filtered)
+}
+
+/** Adjacent 실제 사례 pairs (incl. wrap) in a rotation — for tests / diagnostics. */
+export function personAdjacentPairs(list: readonly DailyCase[]): string[] {
+  const pairs: string[] = []
+  if (list.length < 2) return pairs
+  for (let i = 0; i < list.length; i++) {
+    const a = list[i]!
+    const b = list[(i + 1) % list.length]!
+    if (isPersonCase(a) && isPersonCase(b)) pairs.push(`${a.id}|${b.id}`)
+  }
+  return pairs
 }

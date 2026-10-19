@@ -1102,7 +1102,7 @@
     "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/18971712/",
     "sourceLang": "en",
     "verified": true,
-    "kind": "info",
-    "notes": "PubMed page returned 403 to WebFetch; abstract read via NCBI E-utilities efetch 2026-10-19. 10 male massive weight loss patients underwent chest contouring over 6 years; mean age 42.9; BMI 54.1→29.4. Selection = surgical patients (not all who lost weight). Badge 알아두기 per approved scope; adults only per scope. Surgical technique/satisfaction details not used."
+    "kind": "research",
+    "notes": "PubMed page returned 403 to WebFetch; abstract read via NCBI E-utilities efetch 2026-10-19. 10 male massive weight loss patients underwent chest contouring over 6 years; mean age 42.9; BMI 54.1→29.4. Selection = surgical patients (not all who lost weight). Badge 연구 결과 (multi-person study rule, approved 2026-10-19 v0.5.1); adults only per scope. Surgical technique/satisfaction details not used."
   }
 ]

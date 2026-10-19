@@ -805,7 +805,7 @@ export function mountApp(root: HTMLElement): void {
         }
 
         ${renderDisclaimer(false)}
-        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.0')} · 로컬 전용</p>
+        <p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.1')} · 로컬 전용</p>
       </section>`
   }
 
@@ -985,7 +985,7 @@ export function mountApp(root: HTMLElement): void {
   }
 
   function settingsFooter(): string {
-    return `<p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.0')} · 습관 가이드</p>`
+    return `<p class="footer-note">여유루틴 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.1')} · 습관 가이드</p>`
   }
 
   function panelBody(): string {
@@ -1000,7 +1000,7 @@ export function mountApp(root: HTMLElement): void {
       <header class="app-header">
         <h1>여유루틴</h1>
         <p class="sub">생활 관리 루틴 · 진단·치료 아님</p>
-        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.0')}</p>
+        <p class="version-chip" aria-label="app version">앱 버전 v${escapeHtml(import.meta.env.VITE_APP_VERSION || '0.5.1')}</p>
       </header>
       ${renderTabs()}
       ${panelBody()}
@@ -1022,7 +1022,7 @@ export function mountApp(root: HTMLElement): void {
     } catch {
       /* ignore */
     }
-    location.href = '/?v=0.5.0&_=' + Date.now()
+    location.href = '/?v=0.5.1&_=' + Date.now()
   }
 
   root.addEventListener('click', (ev) => {

@@ -126,8 +126,14 @@ describe('v0.5.0 non-drug / non-surgery evidence additions (dc-043+)', () => {
     const last = orderedCases()[orderedCases().length - 1]
     expect(resolveKind(last)).not.toBe('person')
   })
+  test('dc-051 (multi-person adult study) is 연구 결과 for adults only', () => {
+    const c = allVerifiedCases().find((x) => x.id === 'dc-051')!
+    expect(badgeForCase(c)).toBe('연구 결과')
+    expect(c.ageGroups).toEqual(['20-30s', '40-50s', '60s+'])
+    expect(c.cautionKo).toContain('수술받은 사람만 모은 자료')
+  })
   test('pubertal research additions are 10대-only', () => {
-    for (const c of added.filter((c) => badgeForCase(c) === '연구 결과')) {
+    for (const c of added.filter((c) => badgeForCase(c) === '연구 결과' && c.type === 'pubertal')) {
       expect(c.ageGroups, c.id).toEqual(['10s'])
     }
   })

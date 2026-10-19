@@ -50,6 +50,8 @@ export const PERSON_CASE_IDS: ReadonlySet<string> = new Set([
   'dc-033',
   'dc-034',
   'dc-036',
+  'dc-039',
+  'dc-041',
 ])
 
 export type CaseKind = 'person' | 'research' | 'info'

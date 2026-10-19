@@ -137,7 +137,7 @@
     ],
     "personLabel": "사춘기 남성(일반 경과 설명)",
     "titleKo": "사춘기 여유증, 대개 자연 호전",
-    "summaryKo": "메이요클리닉은 사춘기 호르몬 변화로 생기는 여유증이 비교적 흔하다고 설명해요. 대부분 치료 없이 6개월에서 2년 안에 붓기가 줄어든다고 안내해요. 다만 통증·멍울·분비물 등이 있으면 진료가 필요하다고 해요.",
+    "summaryKo": "메이요클리닉은 사춘기 호르몬 변화로 생기는 여유증이 비교적 흔하다고 설명해요. 대부분 치료 없이 6개월에서 2년 안에 붓기가 줄어든다고 안내해요. 10대라면 3~6개월마다 검진으로 저절로 나아지는지 지켜보기도 하고, 대개 2년 안에 치료 없이 사라진다고 해요. 다만 통증·멍울·분비물 등이 있으면 진료가 필요하다고 해요.",
     "whatHelpedKo": "경과 관찰·안심(필요 시 진료) — 기관 안내",
     "durationKo": "대개 6개월–2년",
     "cautionKo": "원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
@@ -145,7 +145,7 @@
     "sourceUrl": "https://www.mayoclinic.org/diseases-conditions/gynecomastia/symptoms-causes/syc-20351793",
     "sourceLang": "en",
     "verified": true,
-    "notes": "Explainer card, not a named person. Opened Mayo page 2023-10-26 update."
+    "notes": "Explainer card, not a named person. Opened Mayo page 2023-10-26 update. Enriched 2026-10-19 from Mayo 'Diagnosis and treatment' page (https://www.mayoclinic.org/diseases-conditions/gynecomastia/diagnosis-treatment/drc-20351799, Oct. 26, 2023): teens checkups every 3 to 6 months; often goes away without treatment in less than two years."
   },
   {
     "id": "dc-008",
@@ -901,5 +901,208 @@
     "verified": true,
     "kind": "info",
     "notes": "KDCA National Health Information Portal, updated 2026-08-13. FAQ: obesity/high-fat/fast food risk factors → diet+exercise to keep healthy weight may help; pubertal mostly resolves in 1–2 y; warns against self-administering unproven hormone drugs. Page also states surgery is most effective for persistent adult cases — not used in card. Opened via WebFetch 2026-10-19 (curl returned empty)."
+  },
+  {
+    "id": "dc-043",
+    "type": "pubertal",
+    "sourceTier": "case-report",
+    "region": "GR",
+    "ageGroups": [
+      "10s"
+    ],
+    "personLabel": "그리스 사춘기 남아 25명(학회 초록)",
+    "titleKo": "작은 사춘기 여유증은 3년 안에 모두 사라졌어요",
+    "summaryKo": "그리스 소아과 연구팀이 약이나 수술 없이 사춘기 남아 25명(평균 13세)을 평균 2.7년 관찰했어요. 지름 6cm 미만인 15명은 3년 안에 모두 완전히 사라졌어요. 6~11cm인 경우는 완전 소실이 20%, 부분 감소가 80%였어요. 11cm를 넘는 경우는 60%가 부분 감소했고 40%는 4년 넘게 남아 수술을 받았어요.",
+    "whatHelpedKo": "약물·수술 없이 경과 관찰(크기가 작을수록 자연 소실이 많았어요)",
+    "durationKo": "평균 2.7년 관찰(1.2–5.5년)",
+    "cautionKo": "크기와 경과는 사람마다 달라요. 10대라면 보호자와 함께 소아청소년과에서 먼저 상담하세요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "Natural course of pubertal gynecomastia (Endocrine Abstracts 4 P18, SFE 2002)",
+    "sourceUrl": "https://www.endocrine-abstracts.org/ea/0004/ea0004p18",
+    "sourceLang": "en",
+    "verified": true,
+    "kind": "research",
+    "notes": "Opened abstract 2026-10-19. 25 boys, mean age 13.01, follow-up 1.2–5.5 y (mean 2.7), none received medical treatment. Group A (<6cm, n=15): complete regression within 3 y in all; B (6–11cm, n=5): complete 20% (abstract text says '1/4 (20%)'), partial 80%; C (>11cm, n=5): partial 60%, 40% persisted >4 y → cosmetic surgery. '100%' rendered as '모두' (banned word)."
+  },
+  {
+    "id": "dc-044",
+    "type": "pubertal",
+    "sourceTier": "case-report",
+    "region": "DE",
+    "ageGroups": [
+      "10s"
+    ],
+    "personLabel": "독일 사춘기 남아 31명(추적 연구)",
+    "titleKo": "체중이 늘지 않은 아이들의 가슴 지름이 줄었어요",
+    "summaryKo": "독일 연구팀이 진성 여유증이 있던 사춘기 남아 31명을 중앙값 2.4년 다시 살펴봤어요. 완전히 사라진 경우는 6%, 지방형으로 바뀐 경우는 65%, 그대로 남은 경우는 29%였어요. 처음 호르몬 수치로는 경과를 예측할 수 없었고, 체중 상태(BMI) 감소가 가슴 지름 감소를 가장 잘 예측했어요. 연구팀은 체중이 늘지 않도록 하는 것을 권해요.",
+    "whatHelpedKo": "체중이 늘지 않게 관리(BMI 변화가 가장 큰 예측 인자)",
+    "durationKo": "중앙값 2.4년 관찰(1.0–4.8년)",
+    "cautionKo": "10대는 무리한 다이어트보다 성장에 맞는 식사와 활동이 중요해요. 보호자와 함께 소아청소년과에서 상담하세요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "Transition from gynaecomastia to lipomastia in pubertal boys (Reinehr et al., Clin Endocrinol 2021)",
+    "sourceUrl": "https://onlinelibrary.wiley.com/doi/10.1111/cen.14403",
+    "sourceLang": "en",
+    "verified": true,
+    "kind": "research",
+    "notes": "Opened full text 2026-10-19. 31 boys aged 11.7–16.1, median follow-up 2.4 y. At follow-up 6% no enlargement, 65% lipomastia, 29% gynaecomastia. Change in BMI-SDS only significant predictor (β 6.0, p=.015); 14 boys without BMI-SDS increase reduced diameter significantly. Ferring grant noted. One boy who had surgery excluded."
+  },
+  {
+    "id": "dc-045",
+    "type": "pubertal",
+    "sourceTier": "case-report",
+    "region": "PL",
+    "ageGroups": [
+      "10s"
+    ],
+    "personLabel": "폴란드 청소년 남성(외래 추적 연구)",
+    "titleKo": "감량만으로는 진성 여유증이 줄지 않았어요",
+    "summaryKo": "폴란드 소아내분비 연구팀이 여유증 청소년을 추적 관찰(중앙값 3개월)했어요. 감량 권고를 받은 14명 중 8명이 실천했지만, 관찰 기간 동안 가슴 크기가 줄어든 경우는 없었어요. 연구팀은 감량만으로는 진성(유선) 여유증이 교정되지 않는다고 정리해요. 그래도 오래가는 경우 체중 관리를 첫 단계로 권해요.",
+    "whatHelpedKo": "체중 관리는 첫 단계로 권장, 다만 감량만으로 유선 조직이 줄지는 않았어요",
+    "durationKo": "추적 중앙값 3개월",
+    "cautionKo": "10대는 무리한 다이어트를 하지 마세요. 보호자와 함께 소아청소년과에서 상담하세요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "Clinical and Biochemical Phenotype of Adolescent Males with Gynecomastia (Lorek et al., J Clin Res Pediatr Endocrinol 2019)",
+    "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6878348/",
+    "sourceLang": "en",
+    "verified": true,
+    "kind": "research",
+    "notes": "Opened PMC full text 2026-10-19. 63 confirmed, 28 followed up (median 3 months). 14 advised to lose weight, 8 followed; 2 of 14 reached normal BMI Z-score; no breast size reduction. 'weight loss alone will not correct true glandular breast enlargement'; weight loss should be first step in prolonged GM. Note: 3 months is the cohort median follow-up, not specific to the 8."
+  },
+  {
+    "id": "dc-046",
+    "type": "pubertal",
+    "sourceTier": "case-report",
+    "region": "MX",
+    "ageGroups": [
+      "10s"
+    ],
+    "personLabel": "멕시코 사춘기 남성 46명(청소년의학과)",
+    "titleKo": "2년 관찰에서 43%가 자연히 나아졌어요",
+    "summaryKo": "멕시코 청소년의학과가 10년 동안 찾아온 사춘기 여유증 46명을 2년간 관찰했어요. 43%는 저절로 나아졌고, 28%는 수술을 받았으며, 28%는 추적이 끊겼어요. 연구팀은 경과 기간, 크기, 마음의 부담을 함께 보고 치료를 정하자고 제안해요.",
+    "whatHelpedKo": "경과 관찰(크기·기간·마음 부담을 함께 고려)",
+    "durationKo": "2년 관찰",
+    "cautionKo": "추적이 끊긴 사람이 많아 정확한 비율로 보기는 어려워요. 10대라면 보호자와 함께 소아청소년과에서 상담하세요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "[Puberal gynecomastia] (Hernández-Valdés et al., Bol Med Hosp Infant Mex 1989; PMID 2713070)",
+    "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/2713070",
+    "sourceLang": "es",
+    "verified": true,
+    "kind": "research",
+    "notes": "PubMed page returned 403 to WebFetch; abstract read via NCBI E-utilities efetch (same PubMed record) 2026-10-19. Article in Spanish; abstract English. 46 patients over 10 years; 2-year follow-up: remission 43%, surgical 28%, lost 28%; 26% emotional consequences."
+  },
+  {
+    "id": "dc-047",
+    "type": "pubertal",
+    "sourceTier": "medical-org",
+    "region": "TR",
+    "ageGroups": [
+      "10s",
+      "20-30s",
+      "40-50s",
+      "60s+"
+    ],
+    "personLabel": "사춘기·성인 남성(내분비 종설)",
+    "titleKo": "사춘기는 85~90%가 2년 안에 줄어요, 1년 넘으면 단단해져요",
+    "summaryKo": "튀르키예 내분비내과 종설은 사춘기 여유증의 85~90%가 6개월에서 2년 사이에 줄고, 17세 이후까지 남는 경우는 드물다고 정리해요. 생긴 지 6개월이 안 된 여유증은 청소년과 성인 모두 저절로 줄어드는 경우가 많아 대부분 경과 관찰이면 된다고 해요. 다만 1년 넘게 이어지면 섬유 조직이 자리 잡아 완전히 사라지는 경우가 적다고 설명해요.",
+    "whatHelpedKo": "원인 확인 후 경과 관찰(약 6개월 간격 확인)",
+    "durationKo": "사춘기: 6개월–2년",
+    "cautionKo": "오래 이어지거나 한쪽만 단단해지면 진료를 받아 보세요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "Gynecomastia: Clinical evaluation and management (Cuhaci et al., Indian J Endocrinol Metab 2014)",
+    "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3987263/",
+    "sourceLang": "en",
+    "verified": true,
+    "kind": "info",
+    "notes": "Opened PMC full text 2026-10-19. Treatment section: new-onset (<6 months) often regresses in adolescents and adults; pubertal 85–90% regress between 6m and 2y, continuation after 17 rare; persists >1 y → complete regression low due to fibrosis; observation at 6-month intervals. Drug names/doses on page not used."
+  },
+  {
+    "id": "dc-048",
+    "type": "hormonal/medical-treatment",
+    "sourceTier": "medical-org",
+    "region": "INT",
+    "ageGroups": [
+      "10s",
+      "20-30s",
+      "40-50s",
+      "60s+"
+    ],
+    "personLabel": "사춘기·성인 남성(유럽남성학회 지침)",
+    "titleKo": "원인을 해결한 뒤에는 지켜보기를 권해요",
+    "summaryKo": "유럽남성학회(EAA) 진료 지침은 원인 질환을 치료하거나 관련 물질을 끊은 뒤에는 지켜보기(경과 관찰)를 권해요. 사춘기 여유증은 90% 넘게 24개월 안에 저절로 사라진다고 해요. 수술은 오래 이어지고 저절로 줄지 않을 때만 고려하라고 하고, 1년 넘게 이어지면 섬유화가 생겨 자연 감소가 어려워진다고 설명해요.",
+    "whatHelpedKo": "원인 치료·관련 물질 중단 후 경과 관찰(지침 권고)",
+    "durationKo": "사춘기: 대개 24개월 이내",
+    "cautionKo": "복용 중인 약은 임의로 끊지 말고 처방 의사와 상의하세요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "EAA clinical practice guidelines—gynecomastia evaluation and management (Kanakis et al., Andrology 2019)",
+    "sourceUrl": "https://onlinelibrary.wiley.com/doi/full/10.1111/andr.12636",
+    "sourceLang": "en",
+    "verified": true,
+    "kind": "info",
+    "notes": "Opened full text 2026-10-19. S3: pubertal GM >90% resolves within 24 months. R12: watchful waiting after treating underlying pathology / stopping substances. R15: surgery only for long-lasting GM not regressing. Adults: persistence >1 y → fibrosis/hyalinization, spontaneous regression less likely. Drug classes/doses not used."
+  },
+  {
+    "id": "dc-049",
+    "type": "pubertal",
+    "sourceTier": "medical-org",
+    "region": "KR",
+    "ageGroups": [
+      "10s",
+      "20-30s",
+      "40-50s",
+      "60s+"
+    ],
+    "personLabel": "사춘기·성인 남성(병원 질환백과)",
+    "titleKo": "사춘기는 16~17세쯤 대부분 사라져요",
+    "summaryKo": "서울아산병원 질환백과는 사춘기 여유증이 남성호르몬이 안정되는 16~17세쯤 대부분 사라진다고 안내해요. 다만 유방이 4cm 이상 크면 자연적으로는 거의 낫지 않는다고 해요. 지방이 쌓인 가성 여유증은 다이어트와 운동으로 좋아지기도 하지만, 가슴 지방은 다른 곳보다 잘 빠지지 않고 빠진 뒤 처질 수도 있다고 설명해요.",
+    "whatHelpedKo": "사춘기는 경과 관찰, 가성(지방형)은 식사 조절·운동(기관 안내)",
+    "durationKo": "사춘기: 대개 16~17세쯤까지",
+    "cautionKo": "급한 감량보다 천천히 관리하는 편이 좋아요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "여성형 유방(Gynecomastia) – 질환백과 (서울아산병원)",
+    "sourceUrl": "https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=32250",
+    "sourceLang": "ko",
+    "verified": true,
+    "kind": "info",
+    "notes": "Domestic (KR). Opened via WebFetch 2026-10-19. Used: 16~17세경 대부분 사라짐; 4cm 이상 자연 치유 거의 없음; 가성은 다이어트·운동으로 좋아지기도, 가슴 지방 잘 안 빠짐, 빠진 뒤 늘어지는 경우. Page also describes surgical procedures (earlier runs skipped this page for that reason); per approved scope, surgery/referral text NOT used in card."
+  },
+  {
+    "id": "dc-050",
+    "type": "lifestyle",
+    "sourceTier": "medical-org",
+    "region": "UK",
+    "ageGroups": [
+      "10s",
+      "20-30s",
+      "40-50s",
+      "60s+"
+    ],
+    "personLabel": "사춘기·성인 남성(영국 NHS 안내)",
+    "titleKo": "과체중이면 감량부터, 사춘기는 대개 저절로 사라져요",
+    "summaryKo": "영국 국민보건서비스(NHS)는 여유증이 대개 해롭지 않아 치료가 필요 없을 수 있다고 안내해요. 과체중이라면 체중 감량을 권할 수 있다고 하고, 원인 질환이 있으면 그 치료가 크기를 줄이는 데 도움이 될 수 있다고 해요. 사춘기 때문에 생긴 여유증은 시간이 지나며 대개 저절로 사라진다고 설명해요.",
+    "whatHelpedKo": "과체중이면 체중 감량, 원인 질환 치료, 사춘기는 경과 관찰(기관 안내)",
+    "durationKo": "사춘기: 시간이 지나며 대개 사라짐",
+    "cautionKo": "통증이 이어지거나 멍울·분비물·피부 변화가 있으면 진료를 받아 보세요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "Gynaecomastia – NHS",
+    "sourceUrl": "https://www.nhs.uk/conditions/gynaecomastia/",
+    "sourceLang": "en",
+    "verified": true,
+    "kind": "info",
+    "notes": "Opened 2026-10-19 (page last reviewed 31 May 2024). Treatments: losing weight if overweight; treat underlying condition; puberty-caused usually goes away by itself. Medicine/surgery mentions not used."
+  },
+  {
+    "id": "dc-051",
+    "type": "pseudo/fat",
+    "sourceTier": "case-report",
+    "region": "US",
+    "ageGroups": [
+      "20-30s",
+      "40-50s",
+      "60s+"
+    ],
+    "personLabel": "크게 감량한 성인 남성 10명(성형외과 연구)",
+    "titleKo": "큰 폭 감량 뒤에는 가슴 피부가 처질 수 있어요",
+    "summaryKo": "미국 피츠버그대 연구는 크게 감량한 뒤 가슴 모양 변화(가성 여유증)로 가슴 성형을 받은 남성 10명을 분석했어요. 평균 나이는 42.9세였고, 체질량지수(BMI)가 평균 54.1에서 29.4로 줄었어요. 아주 큰 폭으로 감량하면 지방이 빠진 뒤 피부 처짐이 남을 수 있다는 점을 보여 주는 자료예요. 감량은 의료진과 상의하며 천천히 하는 편이 좋아요.",
+    "whatHelpedKo": "천천히 하는 체중 관리(큰 폭 감량 뒤 처짐 가능성 알기)",
+    "durationKo": null,
+    "cautionKo": "이 연구는 수술받은 사람만 모은 자료라 감량한 모든 사람에게 해당하지는 않아요. 원인 확인은 의사 진료가 먼저예요. 개인차가 크며 이 사례가 모두에게 적용되지는 않아요.",
+    "sourceTitle": "Pseudogynecomastia after massive weight loss (Gusenoff et al., Plast Reconstr Surg 2008; PMID 18971712)",
+    "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/18971712/",
+    "sourceLang": "en",
+    "verified": true,
+    "kind": "info",
+    "notes": "PubMed page returned 403 to WebFetch; abstract read via NCBI E-utilities efetch 2026-10-19. 10 male massive weight loss patients underwent chest contouring over 6 years; mean age 42.9; BMI 54.1→29.4. Selection = surgical patients (not all who lost weight). Badge 알아두기 per approved scope; adults only per scope. Surgical technique/satisfaction details not used."
   }
 ]

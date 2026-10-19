@@ -141,6 +141,9 @@ describe('dailyCases badges', () => {
         expect(resolveKind(c)).toBe('person')
       } else if (expectedResearch.has(c.id)) {
         expect(badge).toBe('연구 결과')
+      } else if (c.kind === 'info') {
+        // explicit kind wins (e.g. dc-051: case-report tier shown as 알아두기)
+        expect(badge).toBe('알아두기')
       } else if (c.sourceTier === 'medical-org') {
         expect(badge).toBe('알아두기')
       } else if (c.sourceTier === 'news/interview') {

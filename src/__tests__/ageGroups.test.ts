@@ -37,9 +37,10 @@ describe('ageGroups tagging (cases)', () => {
     expect(allVerifiedCases().length).toBeGreaterThanOrEqual(42)
   })
 
-  test('알아두기 cases target all age groups', () => {
+  test('알아두기 from medical organisations / guidelines (sourceTier medical-org) target all age groups', () => {
     for (const c of allVerifiedCases()) {
-      if (badgeForCase(c) === '알아두기') {
+      if (c.sourceTier === 'medical-org') {
+        expect(badgeForCase(c), c.id).toBe('알아두기')
         expect([...c.ageGroups].sort(), c.id).toEqual([...AGE_GROUPS].sort())
       }
     }
@@ -111,6 +112,24 @@ describe('age-filtered rotation', () => {
       src.map((c) => c.id).filter((id) => !isP(id)),
     )
     expect(out).toHaveLength(src.length)
+  })
+})
+
+describe('v0.5.0 non-drug / non-surgery evidence additions (dc-043+)', () => {
+  const added = allVerifiedCases().filter((c) => Number(c.id.slice(3)) >= 43)
+  test('appended cases are 연구 결과 or 알아두기 only, never 실제 사례', () => {
+    expect(added.length).toBeGreaterThanOrEqual(9)
+    for (const c of added) {
+      expect(['연구 결과', '알아두기'], c.id).toContain(badgeForCase(c))
+      expect(resolveKind(c), c.id).not.toBe('person')
+    }
+    const last = orderedCases()[orderedCases().length - 1]
+    expect(resolveKind(last)).not.toBe('person')
+  })
+  test('pubertal research additions are 10대-only', () => {
+    for (const c of added.filter((c) => badgeForCase(c) === '연구 결과')) {
+      expect(c.ageGroups, c.id).toEqual(['10s'])
+    }
   })
 })
 
